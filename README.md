@@ -13,9 +13,13 @@
 	-TA's and instructors of the cs032 course.
 
 **User Defined Problems:**
+
 	-Scoring guesses in any feud game appropriately. It should be forgiving enough to give points to "close" answers but reward accuracy.
+
 	-Having fair, unrepeating prompts. 
+
 	-Smooth multiplayer lobbying/rooms with private options.
+	
 	-Preventing cheating (against other users simply performing the search).
 
 **Interview/Survey Questions and Results (https://goo.gl/forms/dvTZsWj1tCV85ALt1):**

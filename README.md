@@ -8,9 +8,47 @@
 
 ## Project Requirements
 
-User base:
+**User Base/Stakeholders:**
+	-The casual in-browser videogamer.
+	-TA's and instructors of the cs032 course.
 
-Interview/Survey Questions and Results:
+**User Defined Problems:**
+	-Scoring guesses in any feud game appropriately. 
+
+**Interview/Survey Questions and Results (https://goo.gl/forms/dvTZsWj1tCV85ALt1):**
+
+	Describe the Type of User that might play Google Feud.
+
+		-A casual, in-browser gamer.
+
+		-A person linked to it from social media
+
+	How do you think Google Feud scores responses? How would you score responses?
+
+		-I think it takes the top 10 Google Searches and simply ranks them in increments of 1000 going up to 10000 if you get them exactly. I would score by making the more uncommon searches worth more as they are harder to guess.
+
+		-It looks like it just does the google search for the prompt and then ranks the answers in order. However, it does look like some prompts are predefined
+
+		-Include ranking for how high up the suggestion is. Also give partial credit to suggestions that are kinda right.
+
+	Imagine Google Feud with more than one person. How do you think this would work?
+
+		-I think it would be like pretendyourexyzzy--there would be lobbies and chat and the person who scored the most would win. It could also be time based.
+
+		-This could be multiplayer if you added a rankings board or head to head matches with the same queries. It would be hard to prevent cheating though
+		
+		-Either real time competition (all players in a timed match), or turn based game (so the users play a round every once in a while, like Words with Friends).
+
+	Think of some other web services like Google Search (AskReddit, UrbanDictionary, etc.). Describe the service and why it would or would not work as a Feud game.
+
+		-I think it would be like pretendyourexyzzy--there would be lobbies and chat and the person who scored the most would win. It could also be time based.
+
+		-This could be multiplayer if you added a rankings board or head to head matches with the same queries. It would be hard to prevent cheating though
+
+		-Either real time competition (all players in a timed match), or turn based game (so the users play a round every once in a while, like Words with Friends).
+
+
+
 
 _Fill in your project requirements here!_
 

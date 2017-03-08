@@ -9,11 +9,14 @@
 ## Project Requirements
 
 **User Base/Stakeholders:**
-	-The casual in-browser videogamer.
+	-The casual in-browser videogamer. Possibly linked from social media.
 	-TA's and instructors of the cs032 course.
 
 **User Defined Problems:**
-	-Scoring guesses in any feud game appropriately. 
+	-Scoring guesses in any feud game appropriately. It should be forgiving enough to give points to "close" answers but reward accuracy.
+	-Having fair, unrepeating prompts. 
+	-Smooth multiplayer lobbying/rooms with private options.
+	-Preventing cheating (against other users simply performing the search).
 
 **Interview/Survey Questions and Results (https://goo.gl/forms/dvTZsWj1tCV85ALt1):**
 
@@ -50,6 +53,8 @@
 	Any other comments about your experience with online, competitive games?
 
 		-N/A
+
+**Summary:**
 
 _Fill in your project requirements here!_
 

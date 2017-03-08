@@ -47,8 +47,9 @@
 
 		-Either real time competition (all players in a timed match), or turn based game (so the users play a round every once in a while, like Words with Friends).
 
+	Any other comments about your experience with online, competitive games?
 
-
+		-N/A
 
 _Fill in your project requirements here!_
 

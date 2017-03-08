@@ -9,7 +9,9 @@
 ## Project Requirements
 
 **User Base/Stakeholders:**
+
 	-The casual in-browser videogamer. Possibly linked from social media.
+	
 	-TA's and instructors of the cs032 course.
 
 **User Defined Problems:**
@@ -19,7 +21,7 @@
 	-Having fair, unrepeating prompts. 
 
 	-Smooth multiplayer lobbying/rooms with private options.
-	
+
 	-Preventing cheating (against other users simply performing the search).
 
 **Interview/Survey Questions and Results (https://goo.gl/forms/dvTZsWj1tCV85ALt1):**

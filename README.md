@@ -39,14 +39,14 @@
 - Preventing cheating (against other users simply performing the search).
 
 **Optimal Solution Outline:**
-1. Google Feud.
-2. Smart scoring.
-3. Multiplayer functionality.
-4. Meta-mode.
+&nbsp;1. Google Feud.
+&nbsp;2. Smart scoring.
+&nbsp;3. Multiplayer functionality.
+&nbsp;4. Meta-mode.
 	
 **Features:**
 * Required:
-	1. A fully functional implementation of Google Feud. Loads suggestions from Google based on what it would suggest given a query, and uses the suggestions as answers that the users try to guess. Allows users to enter their own query, or have a random one provided to them. Google search queries are mostly up-to-date.		
+	1. A fully functional implementation of Google Feud. Loads suggestions from Google based on what it would suggest given a query, and uses the suggestions as answers that the users try to guess. Allows users to enter their own query, or have a random one provided to them. Google search suggestions are mostly up-to-date (i.e. if someone went to Google they would get the same suggestions).		
 	2. Scores suggestions based on how high up they are in the suggestion box. Grants users points if they are "close enough", i.e. the words weren't exactly correct but the meaning was roughly the same.
 	3. Allows multiplayer, where users can compete in timed matches.
 	4. "Meta-mode", where the new suggestions are guesses that users made during the game for the input query both during Google Feud and during Meta mode. The system would filter junk guesses, and aggregate suggestions that are similar.
@@ -58,9 +58,6 @@
 	
 **Limitations:**
 - As Google depreciated their Web Search API, we cannot use their more straightforwards tools. We will have to do manual parsing of search results for at least this service.
-	
-**Acceptance Criteria:**
-
 
 ## Project Specs and Mockup
 _A link to your specifications document and your mockup will go here!_

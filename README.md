@@ -61,7 +61,7 @@
 - As Google depreciated their Web Search API, we cannot use their more straightforwards tools. We will have to do manual parsing of search results for at least this service.
 
 ## Project Specs and Mockup
-_A link to your specifications document and your mockup will go here!_
+<a href = docs/specification.md>Specification</a>
 
 ## Project Design Presentation
 _A link to your design presentation/document will go here!_

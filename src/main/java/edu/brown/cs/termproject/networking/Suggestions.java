@@ -65,7 +65,7 @@ public abstract class Suggestions {
       return Collections.emptyList();
     }
 
-    List<String> res = new ArrayList<String>();
+    List<String> res = new ArrayList<>();
     for (JsonElement element : jsonSuggestions) {
       res.add(element.getAsJsonArray().get(0).getAsString());
     }

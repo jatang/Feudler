@@ -110,10 +110,7 @@ public abstract class Suggestions {
     List<String> suggestions = getUniqueGoogleSuggestions(query);
     List<String> updatedSuggestions = new ArrayList<>();
 
-    int i = query.length() - 1;
-    while (query.charAt(i) != ' ') {
-      i--;
-    }
+    int i = query.lastIndexOf(' ');
 
     for (String suggestion : suggestions) {
       updatedSuggestions

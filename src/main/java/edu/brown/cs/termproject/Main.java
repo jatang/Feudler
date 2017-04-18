@@ -25,7 +25,8 @@ public final class Main {
 
   private void run() {
 
-    for (String s : Suggestions.getGoogleSuggestions("My dog likes b")) {
+    for (String s : Suggestions
+        .getUniqueGoogleSuggestionEndings("My dog likes ")) {
       System.out.println(s);
     }
 

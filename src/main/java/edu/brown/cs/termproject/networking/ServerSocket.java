@@ -1,11 +1,12 @@
 package edu.brown.cs.termproject.networking;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -20,7 +21,8 @@ import com.google.gson.JsonSyntaxException;
 public class ServerSocket {
   private static final Gson GSON = new Gson();
 
-  private static final Set<String> ROOM_IDS = new ConcurrentHashSet<>();
+  private static final Set<String> ROOM_IDS =
+      Collections.synchronizedSet(new HashSet<String>());
   private static final Map<String, Room> ROOMS = new ConcurrentHashMap<>();
 
   private static String generateRoomId() {

@@ -73,4 +73,54 @@ public abstract class Suggestions {
     return res;
   }
 
+  /**
+   * A getter for unique suggestions from Google.
+   *
+   * @param query
+   *          A String to query autocorrection suggestions for.
+   * @return Returns a List of unique String representing all the suggestions
+   *         for query starting with query.
+   */
+  public static List<String> getUniqueGoogleSuggestions(String query) {
+    List<String> suggestions = getGoogleSuggestions(query);
+    List<String> updatedSuggestions = new ArrayList<>();
+
+    for (String suggestion : suggestions) {
+      if (suggestion.startsWith(query.toLowerCase())) {
+        updatedSuggestions.add(suggestion);
+      }
+    }
+
+    // Still need to remove similar queries
+    // Ex. (The dog): The dog barks, The dog barks a lot
+    // But not (My dog likes ): the butter, the watermelon
+    return updatedSuggestions;
+  }
+
+  /**
+   * A getter for unique endings of suggestions from Google.
+   *
+   * @param query
+   *          A String to query autocorrection suggestions for.
+   * @return Returns a List of unique String representing all the endings of
+   *         suggestions for query. Includes the word / letters in each ending
+   *         if there is not a space at the end of the query.
+   */
+  public static List<String> getUniqueGoogleSuggestionEndings(String query) {
+    List<String> suggestions = getUniqueGoogleSuggestions(query);
+    List<String> updatedSuggestions = new ArrayList<>();
+
+    int i = query.length() - 1;
+    while (query.charAt(i) != ' ') {
+      i--;
+    }
+
+    for (String suggestion : suggestions) {
+      updatedSuggestions
+          .add(suggestion.substring(i + 1, suggestion.length()));
+    }
+
+    return updatedSuggestions;
+  }
+
 }

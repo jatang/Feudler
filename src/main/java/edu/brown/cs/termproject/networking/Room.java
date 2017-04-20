@@ -1,12 +1,15 @@
 package edu.brown.cs.termproject.networking;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jetty.websocket.api.Session;
 
 import edu.brown.cs.termproject.game.Game;
-import edu.brown.cs.termproject.game.Player;
 
 public class Room {
 
@@ -14,7 +17,7 @@ public class Room {
   private final Session creator;
   private final Map<Session, User> userMap = new ConcurrentHashMap<>();
 
-  private Game game;
+  private Game game = null;
   // Store Settings if needed
 
   public Room(String roomId, Session creator /* , Settings */ ) {
@@ -22,8 +25,8 @@ public class Room {
     this.creator = creator;
   }
 
-  public void addUser(Session session, User user) {
-    userMap.put(session, user);
+  public User addUser(Session session, String username) {
+    return userMap.put(session, new User(0, username, false));
   }
 
   public User getUser(Session session) {
@@ -35,13 +38,23 @@ public class Room {
   }
 
   public void newGame(/* Settings */) {
-    game = new Game(/* Settings */);
+    if (game != null) {
+      game.endGame();
+    }
 
+    List<User> playingUsers = new ArrayList<>();
     for (User user : userMap.values()) {
       if (!user.isSpectating()) {
-        game.addPlayer(new Player(user));
+        playingUsers.add(user);
       }
     }
+
+    try {
+      game = new Game(playingUsers /* , Settings */);
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+
   }
 
   public String getRoomId() {
@@ -52,8 +65,8 @@ public class Room {
     return creator;
   }
 
-  public Map<Session, User> getUsers() {
-    return userMap;
+  public Set<Session> getUserSessions() {
+    return userMap.keySet();
   }
 
   public Game getGame() {

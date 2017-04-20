@@ -36,8 +36,11 @@ public abstract class Suggestions {
    *         query.
    */
   public static List<String> getGoogleSuggestions(String query) {
-    JsonArray jsonSuggestions = null;
+    if (query == null || query.equals("")) {
+      return Collections.emptyList();
+    }
 
+    JsonArray jsonSuggestions = null;
     URIBuilder builder;
     try {
       builder = new URIBuilder(GOOGLE_SUGGESTIONS);

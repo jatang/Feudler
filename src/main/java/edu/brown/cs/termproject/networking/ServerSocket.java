@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,6 +18,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import edu.brown.cs.termproject.queryResponses.QueryResponses;
+import edu.brown.cs.termproject.queryResponses.Response;
+
 @WebSocket
 public class ServerSocket {
   private static final Gson GSON = new Gson();
@@ -25,8 +29,21 @@ public class ServerSocket {
       Collections.synchronizedSet(new HashSet<String>());
   private static final Map<String, Room> ROOMS = new ConcurrentHashMap<>();
 
+  private static final String roomChars = "23456789ABCDEFGHJKLMNPQRSTUVWXY";
+
   private static String generateRoomId() {
-    return null;
+    Random random = new Random();
+    while (true) {
+      String id = "";
+      for (int i = 0; i < 6; i++) {
+        id += roomChars.charAt(random.nextInt(roomChars.length() - 1));
+      }
+
+      if (!ROOM_IDS.contains(id)) {
+        ROOM_IDS.add(id);
+        return id;
+      }
+    }
   }
 
   private static enum MESSAGE_TYPE {
@@ -49,11 +66,11 @@ public class ServerSocket {
   @OnWebSocketClose
   public void closed(Session session, int statusCode, String reason) {
 
-    // Compose and send USER_LEFT message here
+    // Compose and send USER_LEFT message here if necessary
   }
 
   @OnWebSocketMessage
-  public void message(Session session, String message) {
+  public void message(Session session, String message) throws IOException {
 
     JsonObject received;
     JsonObject payload;
@@ -64,6 +81,9 @@ public class ServerSocket {
       return;
     }
 
+    JsonObject updateMessage;
+    JsonObject updatePayload;
+
     Room room;
     switch (MESSAGE_VALUES[received.get("type").getAsInt()]) {
       case CREATE_ROOM:
@@ -73,7 +93,16 @@ public class ServerSocket {
         ROOM_IDS.add(room.getRoomId());
         ROOMS.put(room.getRoomId(), room);
 
+        updateMessage = new JsonObject();
+        updatePayload = new JsonObject();
+
+        updatePayload.addProperty("roomId", room.getRoomId());
+
+        updateMessage.addProperty("type", MESSAGE_TYPE.CREATE_ROOM.ordinal());
+        updateMessage.addProperty("payload", updatePayload.toString());
+
         // Send back CREATE_ROOM success and room link.
+        session.getRemote().sendString(updateMessage.toString());
         break;
       case CUSTOM_QUERY:
         // Payload contains query text.
@@ -87,7 +116,7 @@ public class ServerSocket {
         // Check whether user requesting new game is owner. If so, start new
         // game with same room otherwise do nothing.
 
-        room = ROOMS.get(payload.get("id").getAsString());
+        room = ROOMS.get(payload.get("roomId").getAsString());
         if (room == null) {
           return;
         }
@@ -96,29 +125,76 @@ public class ServerSocket {
           room.newGame(/* Settings */);
         }
 
+        updateMessage = new JsonObject();
+        updatePayload = new JsonObject();
+
+        updateMessage.addProperty("type", MESSAGE_TYPE.NEW_GAME.ordinal());
+        updateMessage.addProperty("payload", updatePayload.toString());
+
         // Send back response on NEW_GAME.
+        for (Session sess : room.getUserSessions()) {
+          sess.getRemote().sendString(updateMessage.toString());
+        }
+
         break;
       case NEW_ROUND:
         // Payload contains room link/id
 
         // Check whether user requesting new round is owner. If so, start round
-        // game in room otherwise do nothing. Send back response (first query)
-        // on NEW_ROUND.
+        // game in room otherwise do nothing.
 
-        room = ROOMS.get(payload.get("id").getAsString());
+        room = ROOMS.get(payload.get("roomId").getAsString());
         if (room == null) {
           return;
         }
 
         if (session.equals(room.getCreator())) {
-          room.getGame().newRound();
+          QueryResponses roundQuery = room.getGame().newRound();
+          if (roundQuery != null) {
+            updateMessage = new JsonObject();
+            updatePayload = new JsonObject();
+
+            updatePayload.addProperty("query", roundQuery.getQuery());
+
+            updateMessage.addProperty("type", MESSAGE_TYPE.NEW_ROUND.ordinal());
+            updateMessage.addProperty("payload", updatePayload.toString());
+
+            // Send back response (round query) on NEW_ROUND.
+            for (Session sess : room.getUserSessions()) {
+              sess.getRemote().sendString(updateMessage.toString());
+            }
+          }
         }
         break;
       case USER_JOIN:
         // Payload contains room link/id, user username
 
         // Check whether room id is valid and is accepting users. If so, add
-        // user to room and send back response (user id) on USER_JOIN.
+        // user to room.
+
+        room = ROOMS.get(payload.get("roomId").getAsString());
+        if (room == null) {
+          return;
+        }
+
+        User addedUser =
+            room.addUser(session, payload.get("username").getAsString());
+        if (addedUser != null) {
+          updateMessage = new JsonObject();
+          updatePayload = new JsonObject();
+
+          updatePayload.addProperty("userId", addedUser.getId());
+          updatePayload.addProperty("username", addedUser.getUsername());
+
+          updateMessage.addProperty("type", MESSAGE_TYPE.USER_JOIN.ordinal());
+          updateMessage.addProperty("payload", updatePayload.toString());
+
+          // Send back response (user id, username) on USER_JOIN
+          for (Session sess : room.getUserSessions()) {
+            sess.getRemote().sendString(updateMessage.toString());
+          }
+        }
+
         break;
       case PLAYER_GUESS:
         // Payload contains room link/id, guess text
@@ -127,8 +203,42 @@ public class ServerSocket {
         // session, and the game has a Player with that user. If so, perform
         // guessing game logic on room with player and
         // guess (check if valid guess, check if already guessed),
-        // otherwise do nothing. Send back response (valid (w/score), invalid)
-        // on PLAYER_GUESS.
+        // otherwise do nothing.
+
+        room = ROOMS.get(payload.get("roomId").getAsString());
+        if (room == null) {
+          return;
+        }
+
+        User found = room.getUser(session);
+        if (found == null) {
+          return;
+        }
+
+        Response res = room.getGame().score(found,
+            payload.get("guess").getAsString());
+
+        if (res != null) {
+          updateMessage = new JsonObject();
+          updatePayload = new JsonObject();
+
+          updatePayload.addProperty("suggestion", res.getResponse());
+          updatePayload.addProperty("score", res.getScore());
+          updatePayload.addProperty("userId", found.getId());
+          updatePayload.addProperty("playerScore",
+              room.getGame().getPlayerScore(found));
+
+          updateMessage.addProperty("type",
+              MESSAGE_TYPE.PLAYER_GUESS.ordinal());
+          updateMessage.addProperty("payload", updatePayload.toString());
+
+          // Send back response if valid (suggestion, score, user id,
+          // playerScore) on PLAYER_GUESS.
+          for (Session sess : room.getUserSessions()) {
+            sess.getRemote().sendString(updateMessage.toString());
+          }
+        }
+
         break;
       case USER_CHAT:
         // Payload contains room link/id, user message
@@ -136,6 +246,31 @@ public class ServerSocket {
         // Check whether room id is valid and contains the User with Session
         // session. If so, send username, message to all users in the room on
         // USER_CHAT.
+
+        room = ROOMS.get(payload.get("roomId").getAsString());
+        if (room == null) {
+          return;
+        }
+
+        User chatUser = room.getUser(session);
+        if (chatUser == null) {
+          return;
+        }
+
+        updateMessage = new JsonObject();
+        updatePayload = new JsonObject();
+
+        updatePayload.addProperty("username", chatUser.getUsername());
+        updatePayload.addProperty("message",
+            payload.get("message").getAsString());
+
+        updateMessage.addProperty("type",
+            MESSAGE_TYPE.USER_CHAT.ordinal());
+        updateMessage.addProperty("payload", updatePayload.toString());
+
+        for (Session sess : room.getUserSessions()) {
+          sess.getRemote().sendString(updateMessage.toString());
+        }
         break;
       default:
         // Send error

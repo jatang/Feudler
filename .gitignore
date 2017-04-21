@@ -72,3 +72,6 @@ local.properties
 
 .DS_Store
 /bin/
+
+data/GoogleNews-vectors-negative300.bin
+

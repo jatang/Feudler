@@ -58,7 +58,7 @@ public class qGenerator {
  		
  	}
  	
- 	public boolean insertCheck(String query) throws IOException {
+ 	public boolean insertCheck(String query, String writeTo) throws IOException {
  		if (db.containsQuery(query)) {
  			return false;
  		}
@@ -83,6 +83,13 @@ public class qGenerator {
   	   if (confirm.equals("Y")) {
   		   boolean output = insertQuery(query);
   		   System.out.println(output);
+  		   if (output) {
+  			 FileWriter fw = new FileWriter(writeTo, true);
+				PrintWriter pw = new PrintWriter(new BufferedWriter(fw));
+				pw.println(query);
+				pw.flush();
+				pw.close();
+  		   }
   		   return output;
   	   }
 	return false;
@@ -98,15 +105,21 @@ public class qGenerator {
  		case "drink": con = s -> fromDrink(s, check);
  		break;
  		case "actor": con = s -> fromActor(s, check);
+ 		break;
+ 		case "food": con = s -> fromFood(s, check);
+ 		break;
+ 		case "checked": con = s -> insertQuery(s);
+ 		break;
  		}
  		if (con == null) {
  			System.out.println("Didn't enter valid function type.");
- 		}
+ 			return;
+ 			}
  		else {
- 			String line = "dummy";
+ 			String line = fRead.readLine();
  			while (line != null) {
- 				line = fRead.readLine();
  				con.accept(line);
+ 				line = fRead.readLine();
  			}
  		}
  	}
@@ -129,18 +142,13 @@ public class qGenerator {
        String query2 = "why does " + toAdd + animal;
        String query3 = "is " + toAdd + animal;
        String query4 = "how can " + toAdd + animal;
+       String query5 = "is my " + animal;
        
-       String[] queries = {query1, query2, query3, query4};
+       String[] queries = {query1, query2, query3, query4, query5};
        for (String query : queries) {
     	   try {
     		   if (check) {
-    			   boolean insert = insertCheck(query);
-    			   if (insert) {
-    				   PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("data/animalQs.txt", true)));
-    				   pw.println(query);
-    				   pw.flush();
-    				   pw.close();
-    			   }
+    			   insertCheck(query, "data/animalQs.txt");
     		   }
     		   else {
     			   insertQuery(query);
@@ -158,9 +166,10 @@ public class qGenerator {
 		String query3 = actor + "in ";
 		try {
 			if (check) {
-		insertCheck(query1);
-		insertCheck(query2);
-		insertCheck(query3);
+				String writeTo = "data/actorQs.txt";
+				insertCheck(query1, writeTo);
+				insertCheck(query2, writeTo);
+				insertCheck(query3, writeTo);
 			}
 			else {
 				insertQuery(query1);
@@ -172,6 +181,28 @@ public class qGenerator {
 		}
 	}
 	
+	public void fromFood(String food, boolean check) {
+		food += " ";
+		String query1 = "can you eat " + food + "with ";
+		String query2 = food + "mixed with ";
+		String query3 = "is " + food;
+		try {
+		if (check) {
+			String writeTo = "data/foodQs.txt";
+			insertCheck(query1, writeTo);
+			insertCheck(query2, writeTo);
+			insertCheck(query3, writeTo);
+		}
+		else {
+			insertQuery(query1);
+			insertQuery(query2);
+			insertQuery(query3);
+		}
+		} catch (IOException e) {
+			System.out.println("fromFood: " + e.getMessage());
+		}
+	}
+	
 	public void fromDrink(String drink, boolean check) {
 		drink += " ";
 		String query1 = "drinking " + drink + "makes me ";
@@ -180,10 +211,11 @@ public class qGenerator {
 		String query4 = "can you drink " + drink;
 		try {
 			if (check) {
-		insertCheck(query1);
-		insertCheck(query2);
-		insertCheck(query3);
-		insertCheck(query4);
+				String writeTo = "data/drinkQs.txt";
+				insertCheck(query1, writeTo);
+				insertCheck(query2, writeTo);
+				insertCheck(query3, writeTo);
+				insertCheck(query4, writeTo);
 			}
 			else {
 				insertQuery(query1);
@@ -211,13 +243,7 @@ public class qGenerator {
 			for (int i = 0; i < wordNum; i++) {
 				toInsert += brokenUp[i] + " ";
 			}
-			if (insertCheck(toInsert)) {
-				FileWriter fw = new FileWriter("data/RQS.txt", true);
-				PrintWriter pw = new PrintWriter(new BufferedWriter(fw));
-				pw.println(toInsert);
-				pw.flush();
-				pw.close();
-			}
+			insertCheck(toInsert, "data/RQS.txt");
 		}
 	}
 	public void fromRelatedQueries(String filePath) {

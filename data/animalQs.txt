@@ -50,3 +50,8 @@ how does a pig
 why does a pig 
 how does a monkey 
 is a monkey 
+how does a turtle 
+why does a turtle 
+is a turtle 
+is my turtle 
+is a dog 

@@ -50,6 +50,23 @@ public class DBConnector {
 	private Connection conn;
 	
 
+	public boolean containsQuery(String query) {
+		try (PreparedStatement prep = conn.prepareStatement("SELECT COUNT(*) FROM queries WHERE query = ?;");) {
+		prep.setString(1, query);
+		ResultSet rs = prep.executeQuery();
+		int count = rs.getInt(1);
+		if (count == 0) {
+			prep.close();
+			return false;
+		}
+		else {
+			prep.close();
+			return true;
+		}
+		} catch (SQLException e) {
+			return false;
+		}
+	}
 	/**
 	 * Returns queryNum random Queries in the form of QueryResponses datatype,
 	 *  or, if QueryNum > the number of queries in the database,

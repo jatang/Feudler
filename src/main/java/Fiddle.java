@@ -7,6 +7,7 @@ import edu.brown.cs.termproject.queryResponses.QueryResponses;
 import edu.brown.cs.termproject.queryResponses.Response;
 
 
+//I just use this when I want to try things out in a main.
 public class Fiddle {
 	public static final void main(String[] args) throws SQLException {
 		List<QueryResponses> qr1 = new qGenerator().nRandomQrs(1);

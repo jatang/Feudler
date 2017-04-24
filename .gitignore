@@ -74,4 +74,5 @@ local.properties
 /bin/
 
 data/GoogleNews-vectors-negative300.bin
+data/embeddings.sqlite3
 

@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -36,12 +37,14 @@ public class Word2VecModel implements AutoCloseable {
    *          the path to the database
    */
   public Word2VecModel(String path) {
+    cache = new ConcurrentHashMap<>();
+
     try {
       Class.forName("org.sqlite.JDBC");
       String urlToDb = "jdbc:sqlite:" + path;
       conn = DriverManager.getConnection(urlToDb);
       statement = conn
-          .prepareStatement("select vector from embeddings where word='?';");
+          .prepareStatement("select vector from embeddings where word=?;");
 
       // Creates the word vocabulary.
       PreparedStatement allWordsStatement = conn
@@ -86,7 +89,7 @@ public class Word2VecModel implements AutoCloseable {
       statement.setString(1, word);
       try (ResultSet rs = statement.executeQuery()) {
         if (rs.next()) {
-          WordVector vector = new WordVector(rs.getString(1));
+          WordVector vector = new WordVector(word, rs.getString(1));
           cache.put(word, vector);
           return Optional.of(vector);
         } else {

@@ -1,5 +1,6 @@
 package edu.brown.cs.termproject.scoring;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 public class WordVector {
 
   // All fields are immutable.
-  private ImmutableList<Double> vector;
+  private Optional<ImmutableList<Double>> vector;
   private double magnitude;
   private String word;
 
@@ -39,17 +40,30 @@ public class WordVector {
         throw new RuntimeException("ERROR: Incorrect vector formatting.");
       }
     }
-    vector = ImmutableList.copyOf(tempVector);
+    vector = Optional.of(ImmutableList.copyOf(tempVector));
 
     if (tempVector.size() == 0) {
       throw new RuntimeException("ERROR: WordVector cannot have dimension 0.");
     }
 
     magnitude = 0;
-    for (Double value : vector) {
+    for (Double value : vector.get()) {
       magnitude += (value * value);
     }
     magnitude = Math.sqrt(magnitude);
+  }
+
+  /**
+   * Initializes a word vector where we don't know the vector. Treats similarity
+   * as 1 if the word strings match, 0 otherwise.
+   *
+   * @param word
+   *          the word defining the word vector
+   */
+  public WordVector(String word) {
+    this.magnitude = 0;
+    this.vector = Optional.absent();
+    this.word = word;
   }
 
   /**
@@ -61,16 +75,21 @@ public class WordVector {
    * @return the cosine similarity, a double between -1 and 1
    */
   public double similarity(WordVector other) {
-    ImmutableList<Double> otherVector = other.getVector();
-    if (otherVector.size() != vector.size()) {
+    Optional<ImmutableList<Double>> otherVector = other.getVector();
+
+    if ((!vector.isPresent()) || (!otherVector.isPresent())) {
+      return other.getWord().equals(word) ? 1 : 0;
+    }
+
+    if (otherVector.get().size() != vector.get().size()) {
       throw new RuntimeException(
           "ERROR: WordVectors have different dimensions.");
     }
 
     // Computes dot product.
     double dotProduct = 0;
-    for (int i = 0; i < vector.size(); i++) {
-      dotProduct += (vector.get(i) * otherVector.get(i));
+    for (int i = 0; i < vector.get().size(); i++) {
+      dotProduct += (vector.get().get(i) * otherVector.get().get(i));
     }
 
     // Normalizes using magnitudes.
@@ -82,7 +101,7 @@ public class WordVector {
    * 
    * @return the vector, as an immutable list of doubles
    */
-  public ImmutableList<Double> getVector() {
+  public Optional<ImmutableList<Double>> getVector() {
     return vector;
   }
 

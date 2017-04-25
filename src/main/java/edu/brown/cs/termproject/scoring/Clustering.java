@@ -3,7 +3,6 @@ package edu.brown.cs.termproject.scoring;
 import com.google.common.base.Optional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Represents a set of clusters for either a set of suggestions or a set of
@@ -22,10 +21,45 @@ import java.util.Set;
  * @param <T>
  *          the type of the cluster, either WordCluster or EmbeddingCluster
  */
-class Clustering<T extends Cluster> {
+public class Clustering<T extends Cluster> {
 
-  private List<T> clusters;
+  private List<T> clusters; // Note that these are ordered.
+  private Word2VecModel model;
   private ClusterFactory<T> factory;
+
+  // TODO: Cover the case where something fits in two clusters, and put it in
+  // the closer one.
+
+  /**
+   * Factory pattern for constructing a suggestion clustering. Note that model
+   * is last, because that's the constructor we want to use.
+   *
+   * @param answers
+   *          the suggestions that google returns, as a list of strings
+   * @param model
+   *          the word2vec model
+   * @return a clustering of the suggestions
+   */
+  public static Clustering<Suggestion> newSuggestionClustering(
+      List<String> answers, Word2VecModel model) {
+    return new Clustering<Suggestion>(answers, new SuggestionFactory(), model);
+  }
+
+  /**
+   * Factory pattern for making a guess clustering. Assumes that most of the
+   * time, the guesses will already be in clusters, and that we're trying to add
+   * to them or make some new ones.
+   * 
+   * @param clusters
+   *          the pre-existing clusters, an empty list if none exist
+   * @param model
+   *          the word2vec model
+   * @return a clustering representing all the guesses for some query
+   */
+  public static Clustering<Guess> newGuessClustering(List<Guess> clusters,
+      Word2VecModel model) {
+    return new Clustering<Guess>(clusters, model, new GuessFactory());
+  }
 
   /**
    * Creates a clustering out of the pre-existing clusters. Used when adding a
@@ -34,8 +68,10 @@ class Clustering<T extends Cluster> {
    * @param clusters
    *          the pre-existing clusters, that make up the clustering
    */
-  public Clustering(Set<T> clusters, ClusterFactory<T> factory) {
+  private Clustering(List<T> clusters, Word2VecModel model,
+      ClusterFactory<T> factory) {
     this.clusters = new ArrayList<>(clusters);
+    this.model = model;
     this.factory = factory;
   }
 
@@ -48,9 +84,11 @@ class Clustering<T extends Cluster> {
    * @param answers
    *          the phrases that google suggests
    */
-  public Clustering(List<String> answers, ClusterFactory<T> factory) {
+  private Clustering(List<String> answers, ClusterFactory<T> factory,
+      Word2VecModel model) {
     this.clusters = new ArrayList<>();
     answers.forEach(this::add);
+    this.model = model;
     this.factory = factory;
   }
 
@@ -60,9 +98,9 @@ class Clustering<T extends Cluster> {
    * @param factory
    *          the factory used to create clusters
    */
-  public Clustering(ClusterFactory<T> factory) {
+  public Clustering(Word2VecModel model) {
     this.clusters = new ArrayList<>();
-    this.factory = factory;
+    this.model = model;
   }
 
   /**
@@ -76,13 +114,14 @@ class Clustering<T extends Cluster> {
    * @return the updated cluster that the word was put into
    */
   public T add(String phrase) {
+    List<WordVector> vectors = model.tokenize(phrase);
     for (T cluster : clusters) {
-      if (cluster.contains(phrase)) {
-        cluster.add(phrase);
+      if (cluster.contains(vectors)) {
+        cluster.add(vectors);
         return cluster;
       }
     }
-    T newCluster = factory.newInstance(phrase);
+    T newCluster = factory.newInstance(vectors);
     clusters.add(newCluster);
     return newCluster;
   }
@@ -99,8 +138,9 @@ class Clustering<T extends Cluster> {
    *         word
    */
   public Optional<T> clusterOf(String phrase) {
+    List<WordVector> vectors = model.tokenize(phrase);
     for (T cluster : clusters) {
-      if (cluster.contains(phrase)) {
+      if (cluster.contains(vectors)) {
         return Optional.of(cluster);
       }
     }

@@ -1,7 +1,6 @@
 package edu.brown.cs.termproject.scoring;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.google.common.collect.ImmutableList;
@@ -56,30 +55,30 @@ public class WordVectorTest {
     WordVector vec;
 
     vec = new WordVector("something", "23,2.5,3.1");
-    assertEquals(vec.getVector(), ImmutableList.of(23.0, 2.5, 3.1));
+    assertEquals(vec.getVector().get(), ImmutableList.of(23.0, 2.5, 3.1));
 
     vec = new WordVector("", "1");
-    assertEquals(vec.getVector(), ImmutableList.of(1.0));
+    assertEquals(vec.getVector().get(), ImmutableList.of(1.0));
 
     vec = new WordVector("", "1.2343243");
-    assertEquals(vec.getVector(), ImmutableList.of(1.2343243));
+    assertEquals(vec.getVector().get(), ImmutableList.of(1.2343243));
 
     vec = new WordVector("", "-1.2343243");
-    assertEquals(vec.getVector(), ImmutableList.of(-1.2343243));
+    assertEquals(vec.getVector().get(), ImmutableList.of(-1.2343243));
 
     vec = new WordVector("", "-1.3e12");
-    assertEquals(vec.getVector(), ImmutableList.of(-1.3e12));
+    assertEquals(vec.getVector().get(), ImmutableList.of(-1.3e12));
 
     vec = new WordVector("", "-1.3e-08");
-    assertEquals(vec.getVector(), ImmutableList.of(-1.3e-8));
+    assertEquals(vec.getVector().get(), ImmutableList.of(-1.3e-8));
 
     vec = new WordVector("", "-1.3e-08,3.41111e23");
-    assertEquals(vec.getVector(), ImmutableList.of(-1.3e-08, 3.41111e23));
+    assertEquals(vec.getVector().get(), ImmutableList.of(-1.3e-08, 3.41111e23));
 
     vec = new WordVector("",
         "-1.3e-08,3.41111e23,1e1,2e3,2.3e4,2.3e-04,-4,-5.2e56");
-    assertEquals(vec.getVector(), ImmutableList.of(-1.3e-08, 3.41111e23, 1.0e1,
-        2.0e3, 2.3e4, 2.3e-04, -4.0, -5.2e56));
+    assertEquals(vec.getVector().get(), ImmutableList.of(-1.3e-08, 3.41111e23,
+        1.0e1, 2.0e3, 2.3e4, 2.3e-04, -4.0, -5.2e56));
   }
 
   @Test

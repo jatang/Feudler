@@ -1,0 +1,26 @@
+package edu.brown.cs.termproject.scoring;
+
+import java.util.List;
+
+public class Guess implements Cluster {
+
+  public Guess(List<WordVector> vectors) {
+    // TODO
+  }
+
+  // TODO: Add another constructor that can make a guess from the database
+  // entries. Also figure out how to store these in the database.
+
+  @Override
+  public boolean contains(List<WordVector> other) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public void add(List<WordVector> other) {
+    // TODO Auto-generated method stub
+
+  }
+
+}

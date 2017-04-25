@@ -23,33 +23,34 @@ public class Word2VecModelTest {
     Word2VecModel model = new Word2VecModel("data/test_embeddings.sqlite3");
     WordVector result;
 
-    result = model.vectorOf("great").get();
+    result = model.vectorOf("great");
     assertEquals(result, new WordVector("great", "0.0"));
-    assertEquals(result.getVector(), ImmutableList.of(2.2, 1.1));
+    assertEquals(result.getVector().get(), ImmutableList.of(2.2, 1.1));
 
     // Tests another call.
-    result = model.vectorOf("great").get();
-    assertEquals(result.getVector(), ImmutableList.of(2.2, 1.1));
+    result = model.vectorOf("great");
+    assertEquals(result.getVector().get(), ImmutableList.of(2.2, 1.1));
 
-    result = model.vectorOf("test").get();
-    assertEquals(result.getVector(), ImmutableList.of(2.3, 1.4));
+    result = model.vectorOf("test");
+    assertEquals(result.getVector().get(), ImmutableList.of(2.3, 1.4));
 
-    result = model.vectorOf("seven").get();
-    assertEquals(result.getVector(), ImmutableList.of(-912.432, -0.000000177));
+    result = model.vectorOf("seven");
+    assertEquals(result.getVector().get(),
+        ImmutableList.of(-912.432, -0.000000177));
 
     // Checks that this doesn't throw an exception.
-    model.vectorOf("ok").get();
+    model.vectorOf("ok");
 
-    assertFalse(model.vectorOf("Seven").isPresent());
-    assertFalse(model.vectorOf("Seven ").isPresent());
-    assertFalse(model.vectorOf(" seven").isPresent());
-    assertFalse(model.vectorOf("SEVEN").isPresent());
-    assertFalse(model.vectorOf("grEAT").isPresent());
-    assertFalse(model.vectorOf("grea").isPresent());
-    assertFalse(model.vectorOf("reat").isPresent());
-    assertFalse(model.vectorOf("      ").isPresent());
-    assertFalse(model.vectorOf("\n\n").isPresent());
-    assertFalse(model.vectorOf("").isPresent());
+    assertFalse(model.vectorOf("Seven").getVector().isPresent());
+    assertFalse(model.vectorOf("Seven ").getVector().isPresent());
+    assertFalse(model.vectorOf(" seven").getVector().isPresent());
+    assertFalse(model.vectorOf("SEVEN").getVector().isPresent());
+    assertFalse(model.vectorOf("grEAT").getVector().isPresent());
+    assertFalse(model.vectorOf("grea").getVector().isPresent());
+    assertFalse(model.vectorOf("reat").getVector().isPresent());
+    assertFalse(model.vectorOf("      ").getVector().isPresent());
+    assertFalse(model.vectorOf("\n\n").getVector().isPresent());
+    assertFalse(model.vectorOf("").getVector().isPresent());
 
     model.close();
   }
@@ -59,45 +60,45 @@ public class Word2VecModelTest {
     Word2VecModel model = new Word2VecModel("data/embeddings.sqlite3");
 
     // Number might need updating after db is fixed.
-    assertEquals(model.vocabulary().size(), 789874);
+    assertEquals(model.vocabulary().size(), 714265);
 
     WordVector first;
     WordVector second;
 
-    first = model.vectorOf("red").get();
-    second = model.vectorOf("blue").get();
+    first = model.vectorOf("red");
+    second = model.vectorOf("blue");
     assertEquals(first.similarity(second), 0.72251, 0.0001);
 
-    first = model.vectorOf("train").get();
-    second = model.vectorOf("car").get();
+    first = model.vectorOf("train");
+    second = model.vectorOf("car");
     assertEquals(first.similarity(second), 0.34025, 0.0001);
 
-    first = model.vectorOf("train").get();
-    second = model.vectorOf("trains").get();
+    first = model.vectorOf("train");
+    second = model.vectorOf("trains");
     assertEquals(first.similarity(second), 0.80812, 0.0001);
 
-    first = model.vectorOf("dog").get();
-    second = model.vectorOf("doggy").get();
+    first = model.vectorOf("dog");
+    second = model.vectorOf("doggy");
     assertEquals(first.similarity(second), 0.61916, 0.0001);
 
-    first = model.vectorOf("king").get();
-    second = model.vectorOf("queen").get();
+    first = model.vectorOf("king");
+    second = model.vectorOf("queen");
     assertEquals(first.similarity(second), 0.651095, 0.0001);
 
-    first = model.vectorOf("don't").get();
-    second = model.vectorOf("stop").get();
+    first = model.vectorOf("don't");
+    second = model.vectorOf("stop");
     assertEquals(first.similarity(second), 0.15901, 0.0001);
 
-    first = model.vectorOf("pirate").get();
-    second = model.vectorOf("leaf").get();
+    first = model.vectorOf("pirate");
+    second = model.vectorOf("leaf");
     assertEquals(first.similarity(second), 0.07423, 0.0001);
 
-    first = model.vectorOf("pirate").get();
-    second = model.vectorOf("transformation").get();
+    first = model.vectorOf("pirate");
+    second = model.vectorOf("transformation");
     assertEquals(first.similarity(second), -0.006338, 0.0001);
 
-    first = model.vectorOf("yes").get();
-    second = model.vectorOf("no").get();
+    first = model.vectorOf("yes");
+    second = model.vectorOf("no");
     assertEquals(first.similarity(second), 0.392106, 0.0001);
 
     model.close();

@@ -1,0 +1,6 @@
+
+Todo:
+	1. Word2Vec model reads stopword file.
+	2. Fill in guess class. Also figure out add in the process.
+	3. Suggestion.contains(String guess) <- and do autocorrecting on that (e.g. led 1 or something).
+	4. Clustering <-- put elements into closest cluster.

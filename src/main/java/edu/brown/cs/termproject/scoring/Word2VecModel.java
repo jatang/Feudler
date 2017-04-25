@@ -1,6 +1,6 @@
 package edu.brown.cs.termproject.scoring;
 
-import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.lang.AutoCloseable;
 import java.sql.Connection;
@@ -8,7 +8,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -29,6 +31,7 @@ public class Word2VecModel implements AutoCloseable {
   private ConcurrentMap<String, WordVector> cache;
   private Connection conn;
   private PreparedStatement statement;
+  private ImmutableList<String> stopwords;
 
   /**
    * Instantiates a word2vec model using the database at the input path.
@@ -60,6 +63,8 @@ public class Word2VecModel implements AutoCloseable {
       statement.setString(1, "a");
       statement.executeQuery(); // Checks that vector is a field.
 
+      // TODO: Read in stopwords from file.
+
     } catch (ClassNotFoundException exception) {
       throw new RuntimeException("Could not find class org.sqlite.JDBC.");
     } catch (SQLException exception) {
@@ -76,13 +81,13 @@ public class Word2VecModel implements AutoCloseable {
    *          the input word
    * @return the vector, absent if none exists
    */
-  public synchronized Optional<WordVector> vectorOf(String word) {
+  public synchronized WordVector vectorOf(String word) {
     if (cache.containsKey(word)) {
-      return Optional.of(cache.get(word));
+      return cache.get(word);
     }
 
     if (!vocabulary.contains(word)) {
-      return Optional.absent();
+      return new WordVector(word);
     }
 
     try {
@@ -91,14 +96,14 @@ public class Word2VecModel implements AutoCloseable {
         if (rs.next()) {
           WordVector vector = new WordVector(word, rs.getString(1));
           cache.put(word, vector);
-          return Optional.of(vector);
+          return vector;
         } else {
-          return Optional.absent();
+          return new WordVector(word);
         }
       }
     } catch (SQLException exception) {
       exception.printStackTrace();
-      return Optional.absent();
+      return new WordVector(word);
     }
   }
 
@@ -119,5 +124,25 @@ public class Word2VecModel implements AutoCloseable {
     } catch (SQLException exception) {
       exception.printStackTrace();
     }
+  }
+
+  /**
+   * Returns a tokenized immutable list from the input string phrase. Converts
+   * to lowercase, splits on whitespace, and removes stopwords.
+   *
+   * @param phrase
+   *          the phrase as a string
+   * @return an immutable list of the tokens
+   */
+  public List<WordVector> tokenize(String phrase) {
+    String lower = phrase.toLowerCase();
+    String[] parts = lower.split("\\s+");
+    List<WordVector> nonStopwordEmbeddings = new ArrayList<>();
+    for (String part : parts) {
+      if (!stopwords.contains(part)) {
+        nonStopwordEmbeddings.add(vectorOf(part));
+      }
+    }
+    return ImmutableList.copyOf(nonStopwordEmbeddings);
   }
 }

@@ -49,20 +49,16 @@ public class Game {
 
       // Save guess
 
-      Response res = tempGuessValidate(guess);
-      if (res != null) {
-        Player player = playerMap.get(user);
-        player.setScore(player.getScore() + res.getScore());
-      }
-      return res;
+      // Response res = tempGuessValidate(guess);
+      // if (res != null) {
+      // Player player = playerMap.get(user);
+      // player.setScore(player.getScore() + res.getScore());
+      // }
+      // return res;
+      return null;
     }
 
     return null;
-  }
-
-  // TODO REPLACE
-  private Response tempGuessValidate(String guess) {
-    return queryResponses.get(currRound).getResponses().get(0);
   }
 
   public synchronized void endGame() {
@@ -79,7 +75,7 @@ public class Game {
   }
 
   public boolean addPlayer(User user) {
-    if(playerMap.size() >= playerLimit) {
+    if (playerMap.size() >= playerLimit) {
       return false;
     }
     return playerMap.put(user, new Player(user)) != null;

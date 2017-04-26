@@ -4,6 +4,8 @@ import com.google.common.base.Optional;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.python.google.common.collect.ImmutableList;
+
 /**
  * Represents a set of clusters for either a set of suggestions or a set of
  * guesses. Used to group suggestions during the game that have roughly the same
@@ -150,5 +152,9 @@ public class Clustering<T extends Cluster> {
   public int size() {
     // TODO Auto-generated method stub
     return 0;
+  }
+
+  public List<T> asList() {
+    return ImmutableList.copyOf(clusters);
   }
 }

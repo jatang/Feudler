@@ -12,7 +12,8 @@ public class Word2VecModelTest {
 
   @Test
   public void testVocab() {
-    Word2VecModel model = new Word2VecModel("data/test_embeddings.sqlite3");
+    Word2VecModel model = new Word2VecModel("data/test_embeddings.sqlite3",
+        "data/stopwords.txt");
     assertEquals(model.vocabulary(),
         ImmutableSet.of("real", "great", "ok", "bad", "test", "seven"));
     model.close();
@@ -20,7 +21,8 @@ public class Word2VecModelTest {
 
   @Test
   public void testVectorOf() {
-    Word2VecModel model = new Word2VecModel("data/test_embeddings.sqlite3");
+    Word2VecModel model = new Word2VecModel("data/test_embeddings.sqlite3",
+        "data/stopwords.txt");
     WordVector result;
 
     result = model.vectorOf("great");
@@ -57,7 +59,8 @@ public class Word2VecModelTest {
 
   @Test
   public void testCorrectness() {
-    Word2VecModel model = new Word2VecModel("data/embeddings.sqlite3");
+    Word2VecModel model = new Word2VecModel("data/embeddings.sqlite3",
+        "data/stopwords.txt");
 
     // Number might need updating after db is fixed.
     assertEquals(model.vocabulary().size(), 714265);

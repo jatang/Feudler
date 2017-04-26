@@ -17,14 +17,18 @@ import org.apache.http.util.EntityUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 
+import edu.brown.cs.termproject.Main;
+import edu.brown.cs.termproject.scoring.Clustering;
+import edu.brown.cs.termproject.scoring.Suggestion;
+import edu.brown.cs.termproject.scoring.Word2VecModel;
+
 /**
  * A class representing methods of getting suggestions.
  */
-public abstract class Suggestions {
+public class Suggestions {
 
   private static final Gson GSON = new Gson();
-  private static final String GOOGLE_SUGGESTIONS =
-      "http://suggestqueries.google.com/complete/search";
+  private static final String GOOGLE_SUGGESTIONS = "http://suggestqueries.google.com/complete/search";
 
   /**
    * A getter for suggestions from Google.
@@ -56,8 +60,8 @@ public abstract class Suggestions {
       String readJson = readJsonp.substring(readJsonp.indexOf("(") + 1,
           readJsonp.lastIndexOf(")"));
 
-      jsonSuggestions =
-          GSON.fromJson(readJson, JsonArray.class).get(1).getAsJsonArray();
+      jsonSuggestions = GSON.fromJson(readJson, JsonArray.class).get(1)
+          .getAsJsonArray();
 
     } catch (URISyntaxException e) {
       return Collections.emptyList();
@@ -82,7 +86,7 @@ public abstract class Suggestions {
    * @return Returns a List of unique String representing all the suggestions
    *         for query starting with query.
    */
-  public static List<String> getUniqueGoogleSuggestions(String query) {
+  private static List<String> getUniqueGoogleSuggestions(String query) {
     List<String> suggestions = getGoogleSuggestions(query);
     List<String> updatedSuggestions = new ArrayList<>();
 
@@ -107,13 +111,14 @@ public abstract class Suggestions {
    *         suggestions for query. Includes the word / letters in each ending
    *         if there is not a space at the end of the query.
    */
-  public static List<String> getUniqueGoogleSuggestionEndings(String query) {
+  public static Clustering<Suggestion> getUniqueGoogleSuggestionEndings(
+      String query) {
     List<String> suggestions = getUniqueGoogleSuggestions(query);
 
     int i = query.lastIndexOf(' ');
     suggestions.forEach((s) -> s.substring(i + 1, s.length()));
 
-    return suggestions;
+    return Clustering.newSuggestionClustering(suggestions, Word2VecModel.model);
   }
 
 }

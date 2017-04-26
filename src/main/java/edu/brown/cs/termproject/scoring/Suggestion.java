@@ -80,4 +80,16 @@ public class Suggestion implements Cluster {
     // Important: This method does nothing. Adding the phrase merely gets rid of
     // it in the clustering.
   }
+
+  @Override
+  public String getResponse() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public int getScore() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 }

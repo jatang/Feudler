@@ -146,4 +146,9 @@ public class Clustering<T extends Cluster> {
     }
     return Optional.absent();
   }
+
+  public int size() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 }

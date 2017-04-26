@@ -29,4 +29,19 @@ interface Cluster {
    *          embeddings
    */
   public void add(List<WordVector> other);
+
+  /**
+   * Returns the original string.
+   * 
+   * @return the original string associated with the cluster. Only used for
+   *         suggestions.
+   */
+  public String getResponse();
+
+  /**
+   * Gets the score.
+   * 
+   * @return the score associated with the cluster. Only used for suggestions.
+   */
+  public int getScore();
 }

@@ -2,6 +2,7 @@ package edu.brown.cs.termproject.scoring;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import java.lang.AutoCloseable;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -25,6 +26,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class Word2VecModel implements AutoCloseable {
 
+  public static final Word2VecModel model = new Word2VecModel("", "");
+
   // vocabulary reference never changes, so multithreaded calls to vocabulary()
   // will not be a problem.
   private ImmutableSet<String> vocabulary;
@@ -39,12 +42,12 @@ public class Word2VecModel implements AutoCloseable {
    * @param path
    *          the path to the database
    */
-  public Word2VecModel(String path) {
+  public Word2VecModel(String dbPath, String stopwordPath) {
     cache = new ConcurrentHashMap<>();
 
     try {
       Class.forName("org.sqlite.JDBC");
-      String urlToDb = "jdbc:sqlite:" + path;
+      String urlToDb = "jdbc:sqlite:" + dbPath;
       conn = DriverManager.getConnection(urlToDb);
       statement = conn
           .prepareStatement("select vector from embeddings where word=?;");
@@ -61,7 +64,7 @@ public class Word2VecModel implements AutoCloseable {
       }
 
       statement.setString(1, "a");
-      statement.executeQuery(); // Checks that vector is a field.
+      statement.executeQuery(); // Checks that word and vector are fields.
 
       // TODO: Read in stopwords from file.
 
@@ -70,7 +73,7 @@ public class Word2VecModel implements AutoCloseable {
     } catch (SQLException exception) {
       exception.printStackTrace();
       throw new RuntimeException(
-          "Non-existent or malformed database at " + path);
+          "Non-existent or malformed database at " + dbPath);
     }
   }
 

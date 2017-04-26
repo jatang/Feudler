@@ -20,6 +20,8 @@ import edu.brown.cs.termproject.database.DBConnector;
 import edu.brown.cs.termproject.networking.Suggestions;
 import edu.brown.cs.termproject.queryResponses.QueryResponses;
 import edu.brown.cs.termproject.queryResponses.Response;
+import edu.brown.cs.termproject.scoring.Clustering;
+import edu.brown.cs.termproject.scoring.Suggestion;
 
 public class qGenerator {
   private final static String dbPath = "data/gFued.sqlite3";
@@ -30,32 +32,28 @@ public class qGenerator {
   }
 
   public boolean insertQuery(String query) {
-    List<String> suggs = Suggestions.getGoogleSuggestions(query);
-    List<Response> reses = new ArrayList<Response>();
-    List<String> filteredSuggs = new ArrayList<>();
-    for (String sug : suggs) {
-      if (sug.startsWith(query.toLowerCase())) {
-        filteredSuggs.add(sug);
-      }
-    }
-    suggs = filteredSuggs;
+
+    Clustering<Suggestion> suggs = Suggestions
+        .getUniqueGoogleSuggestionEndings(query);
+
     if (suggs.size() < 4) {
       return false;
     }
-    for (int i = 0; i < suggs.size(); i++) {
-      reses.add(new Response(suggs.get(i).substring(query.length()), i + 1));
-    }
-    QueryResponses qr = new QueryResponses(query, reses);
+
+    QueryResponses qr = new QueryResponses(query, suggs);
+
     try {
       db.insertQuery(qr);
       return true;
     } catch (SQLException e) {
       return false;
     }
-
   }
 
   public boolean insertCheck(String query, String writeTo) throws IOException {
+
+    // TODO: Make like the other one.
+
     if (db.containsQuery(query)) {
       return false;
     }

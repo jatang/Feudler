@@ -46,7 +46,7 @@ public final class Main {
 
   private static void runSparkServer(int port) {
     Spark.port(port);
-    Spark.externalStaticFileLocation("src/main/resources/static");
+    // Spark.externalStaticFileLocation("src/main/resources/static");
     Spark.exception(Exception.class, new ExceptionPrinter());
 
     FreeMarkerEngine freeMarker = createEngine();
@@ -71,7 +71,7 @@ public final class Main {
 
   private static FreeMarkerEngine createEngine() {
     Configuration config = new Configuration();
-    File templates = new File("src/main/resources/spark/template/freemarker");
+    File templates = new File("src/main/resources");
     try {
       config.setDirectoryForTemplateLoading(templates);
     } catch (IOException ioe) {

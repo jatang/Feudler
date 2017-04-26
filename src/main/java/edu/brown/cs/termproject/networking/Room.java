@@ -10,12 +10,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.jetty.websocket.api.Session;
 
 import edu.brown.cs.termproject.game.Game;
+import edu.brown.cs.termproject.queryGenerator.qGenerator;
+import edu.brown.cs.termproject.queryResponses.QueryResponses;
 
 public class Room {
 
   private final String roomId;
   private final Session creator;
   private final Map<Session, User> userMap = new ConcurrentHashMap<>();
+  private int userId = -1;
 
   private Game game = null;
   // Store Settings if needed
@@ -25,8 +28,8 @@ public class Room {
     this.creator = creator;
   }
 
-  public User addUser(Session session, String username) {
-    return userMap.put(session, new User(0, username, false));
+  public synchronized User addUser(Session session, String username) {
+    return userMap.put(session, new User(userId++, username, false));
   }
 
   public User getUser(Session session) {
@@ -50,7 +53,8 @@ public class Room {
     }
 
     try {
-      game = new Game(playingUsers /* , Settings */);
+      List<QueryResponses> queryResponses = new qGenerator().nRandomQrs(5);
+      game = new Game(playingUsers, queryResponses /* , Settings */);
     } catch (SQLException e) {
       e.printStackTrace();
     }

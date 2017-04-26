@@ -1,38 +1,38 @@
 package edu.brown.cs.termproject.game;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import edu.brown.cs.termproject.networking.User;
-import edu.brown.cs.termproject.queryGenerator.qGenerator;
 import edu.brown.cs.termproject.queryResponses.QueryResponses;
 import edu.brown.cs.termproject.queryResponses.Response;
 
 public class Game {
 
-  private final Map<User, Player> playerMap;
+  private final Map<User, Player> playerMap = new ConcurrentHashMap<>();
   private int playerLimit = 10;
   private int currRound = -1;
-  private int numRounds;
 
   private final List<QueryResponses> queryResponses;
   // Mode
   // Category
 
-  public Game(/* Settings */) throws SQLException {
-    this.playerMap = new ConcurrentHashMap<>();
-    this.queryResponses = new qGenerator().nRandomQrs(numRounds);
+  public Game(List<QueryResponses> queryResponses /* Settings */) {
+    this.queryResponses = queryResponses;
   }
 
-  public Game(List<User> users /* , Settings */) throws SQLException {
-    this.playerMap = new ConcurrentHashMap<>();
+  public Game(List<User> users, List<QueryResponses> queryResponses
+  /* Settings */) {
+
     for (User user : users) {
+      if (playerMap.size() >= playerLimit) {
+        break;
+      }
       playerMap.put(user, new Player(user));
     }
 
-    this.queryResponses = new qGenerator().nRandomQrs(numRounds);
+    this.queryResponses = queryResponses;
   }
 
   public synchronized QueryResponses newRound() {
@@ -79,6 +79,9 @@ public class Game {
   }
 
   public boolean addPlayer(User user) {
+    if(playerMap.size() >= playerLimit) {
+      return false;
+    }
     return playerMap.put(user, new Player(user)) != null;
   }
 

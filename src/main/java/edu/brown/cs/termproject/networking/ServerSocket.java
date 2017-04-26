@@ -67,6 +67,9 @@ public class ServerSocket {
   public void closed(Session session, int statusCode, String reason) {
 
     // Compose and send USER_LEFT message here if necessary
+    for (Room room : ROOMS.values()) {
+      room.removeUser(session);
+    }
   }
 
   @OnWebSocketMessage
@@ -107,8 +110,18 @@ public class ServerSocket {
       case CUSTOM_QUERY:
         // Payload contains query text.
 
-        // Check whether or not custom query is valid. Send back response on
-        // CUSTOM_QUERY.
+        // Check whether or not custom query is valid.
+        updateMessage = new JsonObject();
+        updatePayload = new JsonObject();
+
+        updateMessage.addProperty("type", MESSAGE_TYPE.CUSTOM_QUERY.ordinal());
+        updateMessage.addProperty("payload", updatePayload.toString());
+
+        payload.addProperty("valid", false);
+
+        // Send back response on CUSTOM_QUERY.
+        session.getRemote().sendString(updateMessage.toString());
+
         break;
       case NEW_GAME:
         // Payload contains room link/id, settings
@@ -223,7 +236,8 @@ public class ServerSocket {
           updatePayload = new JsonObject();
 
           updatePayload.addProperty("suggestion", res.getResponse());
-          updatePayload.addProperty("score", res.getScore());
+          updatePayload.addProperty("suggestionIndex", res.getScore() - 1);
+          updatePayload.addProperty("score", res.getScore() * 1000);
           updatePayload.addProperty("userId", found.getId());
           updatePayload.addProperty("playerScore",
               room.getGame().getPlayerScore(found));

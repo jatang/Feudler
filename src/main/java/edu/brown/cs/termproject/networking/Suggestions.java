@@ -16,7 +16,6 @@ import org.apache.http.util.EntityUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 
 /**
  * A class representing methods of getting suggestions.
@@ -69,9 +68,8 @@ public abstract class Suggestions {
     }
 
     List<String> res = new ArrayList<>();
-    for (JsonElement element : jsonSuggestions) {
-      res.add(element.getAsJsonArray().get(0).getAsString());
-    }
+    jsonSuggestions.forEach(
+        (element) -> res.add(element.getAsJsonArray().get(0).getAsString()));
 
     return res;
   }
@@ -111,16 +109,11 @@ public abstract class Suggestions {
    */
   public static List<String> getUniqueGoogleSuggestionEndings(String query) {
     List<String> suggestions = getUniqueGoogleSuggestions(query);
-    List<String> updatedSuggestions = new ArrayList<>();
 
     int i = query.lastIndexOf(' ');
+    suggestions.forEach((s) -> s.substring(i + 1, s.length()));
 
-    for (String suggestion : suggestions) {
-      updatedSuggestions
-          .add(suggestion.substring(i + 1, suggestion.length()));
-    }
-
-    return updatedSuggestions;
+    return suggestions;
   }
 
 }

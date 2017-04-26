@@ -3,7 +3,10 @@ package edu.brown.cs.termproject.scoring;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import java.io.IOException;
 import java.lang.AutoCloseable;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -28,19 +31,21 @@ public class Word2VecModel implements AutoCloseable {
 
   public static final Word2VecModel model = new Word2VecModel("", "");
 
-  // vocabulary reference never changes, so multithreaded calls to vocabulary()
+  // vocabulary reference never changes, so concurrent calls to vocabulary()
   // will not be a problem.
   private ImmutableSet<String> vocabulary;
   private ConcurrentMap<String, WordVector> cache;
   private Connection conn;
   private PreparedStatement statement;
-  private ImmutableList<String> stopwords;
+  private ImmutableSet<String> stopwords;
 
   /**
    * Instantiates a word2vec model using the database at the input path.
    *
-   * @param path
+   * @param dbPath
    *          the path to the database
+   * @param stopwordPath
+   *          the path to the stopwords file
    */
   public Word2VecModel(String dbPath, String stopwordPath) {
     cache = new ConcurrentHashMap<>();
@@ -66,7 +71,10 @@ public class Word2VecModel implements AutoCloseable {
       statement.setString(1, "a");
       statement.executeQuery(); // Checks that word and vector are fields.
 
-      // TODO: Read in stopwords from file.
+      // Reads stopwords from file.
+      Set<String> temporaryStopwords = new HashSet<>();
+      Files.lines(Paths.get(stopwordPath)).forEach(temporaryStopwords::add);
+      stopwords = ImmutableSet.copyOf(temporaryStopwords);
 
     } catch (ClassNotFoundException exception) {
       throw new RuntimeException("Could not find class org.sqlite.JDBC.");
@@ -74,6 +82,9 @@ public class Word2VecModel implements AutoCloseable {
       exception.printStackTrace();
       throw new RuntimeException(
           "Non-existent or malformed database at " + dbPath);
+    } catch (IOException exception) {
+      throw new RuntimeException(
+          "Unable to read stopword file at " + stopwordPath);
     }
   }
 

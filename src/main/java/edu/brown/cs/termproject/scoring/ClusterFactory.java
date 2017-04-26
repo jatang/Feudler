@@ -20,5 +20,5 @@ interface ClusterFactory<T extends Cluster> {
    *          the phrase representing the initial point in the cluster
    * @return the cluster created
    */
-  T newInstance(List<WordVector> vectors);
+  T newInstance(List<WordVector> vectors, String phrase, int score);
 }

@@ -4,7 +4,7 @@ import java.util.List;
 
 public class Guess implements Cluster {
 
-  public Guess(List<WordVector> vectors) {
+  public Guess(List<WordVector> vectors, String originalPhrase) {
     // TODO
   }
 
@@ -20,7 +20,6 @@ public class Guess implements Cluster {
   @Override
   public void add(List<WordVector> other) {
     // TODO Auto-generated method stub
-
   }
 
   @Override
@@ -35,4 +34,15 @@ public class Guess implements Cluster {
     return 0;
   }
 
+  @Override
+  public double similarity(List<WordVector> other) {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public double similarityThreshold() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
 }

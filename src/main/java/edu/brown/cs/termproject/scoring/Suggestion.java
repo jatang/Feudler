@@ -11,11 +11,12 @@ import java.util.List;
  */
 public class Suggestion implements Cluster {
 
-  // Test the hyperparameters with different values.
-  private static final double SUGGESTION_THRESHOLD = 0.6;
-  private static final double GUESS_THRESHOLD = 0.6;
+  // Test the hyperparameter with different values.
+  private static final double THRESHOLD = 0.6;
 
   private List<WordVector> vectors;
+  private String originalPhrase;
+  private int score;
 
   /**
    * Initializes the suggestion with the input phrase embeddings.
@@ -23,41 +24,28 @@ public class Suggestion implements Cluster {
    * @param vectors
    *          the tokenized embeddings of the phrase
    */
-  public Suggestion(List<WordVector> vectors) {
+  public Suggestion(List<WordVector> vectors, String phrase, int score) {
     this.vectors = vectors;
-  }
-
-  /**
-   * Checks if an input guess matches the answer/suggestion.
-   *
-   * @param guess
-   *          the user's guess
-   * @param model
-   *          the word2vec model, used to check similarity
-   * @return true if the guess is close enough, false otherwise
-   */
-  public boolean contains(String guess, Word2VecModel model) {
-    // TODO
-    return false;
+    this.originalPhrase = phrase;
+    this.score = score;
   }
 
   @Override
-  public boolean contains(List<WordVector> otherSuggestion) {
-    // This is the **not** the same contains that is used to check if a guess is
-    // correct and whether another phrase should join the cluster.
-    // That is done by .contains(String, Word2VecModel).
-
-    double totalAvgSimilarity = (avgSimilarity(vectors, otherSuggestion)
-        + avgSimilarity(otherSuggestion, vectors)) / 2;
+  public double similarity(List<WordVector> otherSuggestion) {
     // Dividing by 2 is redundant but it keeps the scaling correct (max possible
     // is 1, min is -1).
+    return (avgSimilarity(vectors, otherSuggestion)
+        + avgSimilarity(otherSuggestion, vectors)) / 2;
+  }
 
-    return totalAvgSimilarity >= SUGGESTION_THRESHOLD;
+  @Override
+  public double similarityThreshold() {
+    return THRESHOLD;
   }
 
   /*
-   * Computes the avg similarity of each word in $these$ to the closest match in
-   * $others$.
+   * Computes the avg similarity of each word in the first list to the closest
+   * match in the second.
    */
   private double avgSimilarity(List<WordVector> these,
       List<WordVector> others) {
@@ -83,13 +71,11 @@ public class Suggestion implements Cluster {
 
   @Override
   public String getResponse() {
-    // TODO Auto-generated method stub
-    return null;
+    return originalPhrase;
   }
 
   @Override
   public int getScore() {
-    // TODO Auto-generated method stub
-    return 0;
+    return score;
   }
 }

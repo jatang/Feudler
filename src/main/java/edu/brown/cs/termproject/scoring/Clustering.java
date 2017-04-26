@@ -1,10 +1,12 @@
 package edu.brown.cs.termproject.scoring;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.python.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Represents a set of clusters for either a set of suggestions or a set of
@@ -25,12 +27,10 @@ import org.python.google.common.collect.ImmutableList;
  */
 public class Clustering<T extends Cluster> {
 
-  private List<T> clusters; // Note that these are ordered.
+  private List<T> clusters; // Note that the ordering matters here.
   private Word2VecModel model;
   private ClusterFactory<T> factory;
-
-  // TODO: Cover the case where something fits in two clusters, and put it in
-  // the closer one.
+  private int total;
 
   /**
    * Factory pattern for constructing a suggestion clustering. Note that model
@@ -45,6 +45,29 @@ public class Clustering<T extends Cluster> {
   public static Clustering<Suggestion> newSuggestionClustering(
       List<String> answers, Word2VecModel model) {
     return new Clustering<Suggestion>(answers, new SuggestionFactory(), model);
+  }
+
+  /**
+   * Makes a suggestion clustering out of a pre-existing suggestion clustering.
+   * Does not bother with comparing the suggestions with each other. Still
+   * tokenizes and vectorizes the suggestions for use when comparing with
+   * guesses.
+   *
+   * @param responseScores
+   *          a list of tuples, where the first item is the string of the
+   *          suggestion, the second item is the score
+   * @param model
+   *          the word2vec model
+   * @return a clustering of suggestions
+   */
+  public static Clustering<Suggestion> newExistingSuggestionClustering(
+      List<Pair<String, Integer>> responseScores, Word2VecModel model) {
+    List<Suggestion> suggestions = responseScores.stream()
+        .map((Pair<String, Integer> p) -> new Suggestion(
+            model.tokenize(p.getLeft()), p.getLeft(), p.getRight()))
+        .collect(Collectors.toList());
+    return new Clustering<Suggestion>(suggestions, model,
+        new SuggestionFactory());
   }
 
   /**
@@ -72,6 +95,7 @@ public class Clustering<T extends Cluster> {
    */
   private Clustering(List<T> clusters, Word2VecModel model,
       ClusterFactory<T> factory) {
+    total = 0;
     this.clusters = new ArrayList<>(clusters);
     this.model = model;
     this.factory = factory;
@@ -88,6 +112,7 @@ public class Clustering<T extends Cluster> {
    */
   private Clustering(List<String> answers, ClusterFactory<T> factory,
       Word2VecModel model) {
+    total = 0;
     this.clusters = new ArrayList<>();
     answers.forEach(this::add);
     this.model = model;
@@ -95,21 +120,12 @@ public class Clustering<T extends Cluster> {
   }
 
   /**
-   * Instantiates an empty clustering. Can add clusters.
-   *
-   * @param factory
-   *          the factory used to create clusters
-   */
-  public Clustering(Word2VecModel model) {
-    this.clusters = new ArrayList<>();
-    this.model = model;
-  }
-
-  /**
    * Adds the guess/answer to the clustering, creating a new cluster if need be,
    * and returns the cluster it was added to (the updated cluster if the cluster
    * gets updated). Used when making a cluster out of suggestions returned from
-   * Google, or when adding a guess to a pre-existing cluster.
+   * Google, or when adding a guess to a pre-existing cluster. Important: if the
+   * phrase matches *any* cluster, it adds the phrase to the clustering that is
+   * closest.
    * 
    * @param phrase
    *          the guess or answer to add to the cluster
@@ -117,15 +133,32 @@ public class Clustering<T extends Cluster> {
    */
   public T add(String phrase) {
     List<WordVector> vectors = model.tokenize(phrase);
+    Optional<Pair<T, Double>> bestMatch = Optional.absent();
+
     for (T cluster : clusters) {
-      if (cluster.contains(vectors)) {
-        cluster.add(vectors);
-        return cluster;
+      double similarity = cluster.similarity(vectors);
+      // Makes sure that it picks the closest cluster.
+      if (similarity >= cluster.similarityThreshold()) {
+        if (bestMatch.isPresent()) {
+          if (bestMatch.get().getRight() < similarity) {
+            bestMatch = Optional.of(Pair.of(cluster, similarity));
+          }
+        } else {
+          bestMatch = Optional.of(Pair.of(cluster, similarity));
+        }
       }
     }
-    T newCluster = factory.newInstance(vectors);
-    clusters.add(newCluster);
-    return newCluster;
+
+    if (bestMatch.isPresent()) {
+      T best = bestMatch.get().getLeft();
+      best.add(vectors);
+      return best;
+    } else {
+      total += 1;
+      T newCluster = factory.newInstance(vectors, phrase, total);
+      clusters.add(newCluster);
+      return newCluster;
+    }
   }
 
   /**
@@ -150,8 +183,7 @@ public class Clustering<T extends Cluster> {
   }
 
   public int size() {
-    // TODO Auto-generated method stub
-    return 0;
+    return total;
   }
 
   public List<T> asList() {

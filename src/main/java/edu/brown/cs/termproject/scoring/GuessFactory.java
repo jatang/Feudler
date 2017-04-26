@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class GuessFactory implements ClusterFactory<Guess> {
   @Override
-  public Guess newInstance(List<WordVector> vectors) {
-    return new Guess(vectors);
+  public Guess newInstance(List<WordVector> vectors, String phrase, int score) {
+    return new Guess(vectors, phrase);
   }
 }

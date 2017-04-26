@@ -9,7 +9,8 @@ import java.util.List;
  */
 class SuggestionFactory implements ClusterFactory<Suggestion> {
   @Override
-  public Suggestion newInstance(List<WordVector> vectors) {
-    return new Suggestion(vectors);
+  public Suggestion newInstance(List<WordVector> vectors, String phrase,
+      int score) {
+    return new Suggestion(vectors, phrase, score);
   }
 }

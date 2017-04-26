@@ -1,6 +1,13 @@
 
 Todo:
-	1. Word2Vec model reads stopword file.
-	2. Fill in guess class. Also figure out add in the process.
-	3. Suggestion.contains(String guess) <- and do autocorrecting on that (e.g. led 1 or something).
-	4. Clustering <-- put elements into closest cluster.
+	DONE. Fill in getResponse and getScore for Suggestion.
+	DONE. Suggestion Clustering static constructor using existing clusters (represented as strings and scores).
+	DONE. Word2Vec model reads stopword file.
+	DONE. Elements will be put in the closest cluster.
+	2. Test
+	3. Fill in guess class. Also figure out add in the process.
+	4?. LED of 1 on tokenize?
+	
+Qs:
+	- Should guesses for suggestions be compared the same way other suggestions are?
+	

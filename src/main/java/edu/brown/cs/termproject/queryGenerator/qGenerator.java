@@ -49,29 +49,31 @@ public class qGenerator {
       return false;
     }
   }
+  
+  public boolean isValidQuery(String query) {
+	  Clustering<Suggestion> suggs = Suggestions.getUniqueGoogleSuggestionEndings(query);
+	  if (suggs.size()<4) {
+		  return false;
+	  }
+	  return true;
+  }
 
   public boolean insertCheck(String query, String writeTo) throws IOException {
 
-    // TODO: Make like the other one.
+    
 
     if (db.containsQuery(query)) {
       return false;
     }
-    List<String> suggs = Suggestions.getGoogleSuggestions(query);
-    List<String> filteredSuggs = new ArrayList<>();
-    for (String sug : suggs) {
-      if (sug.startsWith(query.toLowerCase())) {
-        filteredSuggs.add(sug);
-      }
-    }
-    suggs = filteredSuggs;
+    Clustering<Suggestion> suggs = Suggestions.getUniqueGoogleSuggestionEndings(query);
     if (suggs.size() < 4) {
       System.out.println(query);
       System.out.println(false);
       return false;
     }
-    for (String s : suggs) {
-      System.out.println(s);
+    List<Suggestion> filteredSuggs = suggs.asList();
+    for (Suggestion s : filteredSuggs) {
+      System.out.println(s.getResponse());
     }
     BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
     String confirm = r.readLine();

@@ -14,6 +14,7 @@ public class insertMain {
 		//qGen.insertFile("data/animalQs.txt", "checked", false);
 		//qGen.insertFile("data/actorQs.txt", "checked", false);
 		qGen.insertFile("data/RQS.txt", "checked", false);
+		//qGen.fromRelatedQueries("data/poppedUp.csv");
 //		qGen.fromRelatedQueries("data/whyDoSome.csv");
 //		qGen.fromRelatedQueries("data/whyIsMy.csv");
 //		qGen.fromRelatedQueries("data/isItPossible.csv");

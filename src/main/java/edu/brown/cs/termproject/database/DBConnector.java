@@ -14,6 +14,9 @@ import java.util.TreeSet;
 
 import edu.brown.cs.termproject.queryResponses.QueryResponses;
 import edu.brown.cs.termproject.queryResponses.Response;
+import edu.brown.cs.termproject.scoring.Clustering;
+import edu.brown.cs.termproject.scoring.Suggestion;
+import edu.brown.cs.termproject.scoring.Word2VecModel;
 
 public class DBConnector {
   private static final Set<String> TABLE_NAMES = new TreeSet<String>(
@@ -90,16 +93,17 @@ public class DBConnector {
     while (rs.next()) {
       String query = rs.getString("query");
       int qID = rs.getInt("ID");
-      List<Response> responses = new ArrayList<>();
+      List<String> responses = new ArrayList<>();
       PreparedStatement resPrep = conn.prepareStatement(
-          "SELECT answer, score FROM answers WHERE queryID = ?;");
+          "SELECT answer FROM answers WHERE queryID = ? ORDER BY score;");
       resPrep.setInt(1, qID);
       ResultSet resRs = resPrep.executeQuery();
+      
       while (resRs.next()) {
-        responses.add(new Response(resRs.getString(1), resRs.getInt(2)));
+        responses.add(resRs.getString(1));
       }
       resPrep.close();
-      queries.add(new QueryResponses(query, responses));
+      queries.add(new QueryResponses(query, Clustering.newSuggestionClustering(responses, Word2VecModel.model)));
     }
     prep.close();
     // ResultSets closed when you close their prep;
@@ -134,9 +138,9 @@ public class DBConnector {
     prep.close();
     prep = conn.prepareStatement(
         "INSERT INTO answers (answer, score, queryID) values (?, ?, ?);");
-    for (Response res : qr.getResponses()) {
-      prep.setString(1, res.getResponse());
-      prep.setInt(2, res.getScore());
+    for (Suggestion sug : qr.getResponses().asList()) {
+      prep.setString(1, sug.getResponse());
+      prep.setInt(2, sug.getScore());
       prep.setInt(3, qID);
       prep.addBatch();
     }

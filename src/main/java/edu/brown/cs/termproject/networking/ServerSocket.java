@@ -14,12 +14,13 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
+import com.google.common.base.Optional;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
 import edu.brown.cs.termproject.queryResponses.QueryResponses;
-import edu.brown.cs.termproject.queryResponses.Response;
+import edu.brown.cs.termproject.scoring.Suggestion;
 
 @WebSocket
 public class ServerSocket {
@@ -228,29 +229,38 @@ public class ServerSocket {
           return;
         }
 
-        Response res = room.getGame().score(found,
+        Optional<Suggestion> res = room.getGame().score(found,
             payload.get("guess").getAsString());
 
-        if (res != null) {
-          updateMessage = new JsonObject();
-          updatePayload = new JsonObject();
+        updateMessage = new JsonObject();
+        updatePayload = new JsonObject();
 
-          updatePayload.addProperty("suggestion", res.getResponse());
-          updatePayload.addProperty("suggestionIndex", res.getScore() - 1);
-          updatePayload.addProperty("score", res.getScore() * 1000);
+        if (res.isPresent()) {
+          Suggestion sugg = res.get();
+
+          updatePayload.addProperty("suggestion", sugg.getResponse());
+          updatePayload.addProperty("suggestionIndex", sugg.getScore() - 1);
+          updatePayload.addProperty("score", sugg.getScore() * 1000);
           updatePayload.addProperty("userId", found.getId());
           updatePayload.addProperty("playerScore",
               room.getGame().getPlayerScore(found));
+        } else {
+          updatePayload.addProperty("suggestion", "");
+          updatePayload.addProperty("suggestionIndex", "");
+          updatePayload.addProperty("score", "");
+          updatePayload.addProperty("userId", found.getId());
+          updatePayload.addProperty("playerScore",
+              room.getGame().getPlayerScore(found));
+        }
 
-          updateMessage.addProperty("type",
-              MESSAGE_TYPE.PLAYER_GUESS.ordinal());
-          updateMessage.addProperty("payload", updatePayload.toString());
+        updateMessage.addProperty("type",
+            MESSAGE_TYPE.PLAYER_GUESS.ordinal());
+        updateMessage.addProperty("payload", updatePayload.toString());
 
-          // Send back response if valid (suggestion, score, user id,
-          // playerScore) on PLAYER_GUESS.
-          for (Session sess : room.getUserSessions()) {
-            sess.getRemote().sendString(updateMessage.toString());
-          }
+        // Send back response if valid (suggestion, score, user id,
+        // playerScore) on PLAYER_GUESS.
+        for (Session sess : room.getUserSessions()) {
+          sess.getRemote().sendString(updateMessage.toString());
         }
 
         break;

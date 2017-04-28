@@ -17,18 +17,20 @@ import org.apache.http.util.EntityUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 
-import edu.brown.cs.termproject.Main;
 import edu.brown.cs.termproject.scoring.Clustering;
 import edu.brown.cs.termproject.scoring.Suggestion;
 import edu.brown.cs.termproject.scoring.Word2VecModel;
 
 /**
  * A class representing methods of getting suggestions.
+ *
+ * @author lcohen2
  */
 public class Suggestions {
 
   private static final Gson GSON = new Gson();
-  private static final String GOOGLE_SUGGESTIONS = "http://suggestqueries.google.com/complete/search";
+  private static final String GOOGLE_SUGGESTIONS =
+      "http://suggestqueries.google.com/complete/search";
 
   /**
    * A getter for suggestions from Google.

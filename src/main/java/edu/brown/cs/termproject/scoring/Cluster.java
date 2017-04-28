@@ -34,7 +34,7 @@ interface Cluster {
 
   /**
    * Returns the original string.
-   * 
+   *
    * @return the original string associated with the cluster. Only used for
    *         suggestions.
    */
@@ -44,7 +44,7 @@ interface Cluster {
    * Gets the score. Important: for suggestions, scores are 1-indexed. The top
    * suggestion will have a score of 1. For guesses, the score is the number of
    * phrases in the cluster.
-   * 
+   *
    * @return the score associated with the cluster.
    */
   public int getScore();
@@ -62,7 +62,7 @@ interface Cluster {
   /**
    * Gets the minimum similarity value that is allowed for a phrase to belong in
    * the cluster.
-   * 
+   *
    * @return the similarity threshold
    */
   public double similarityThreshold();

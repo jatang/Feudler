@@ -36,7 +36,7 @@ let $guess;
 let connection;
 
 $(document).ready(() => {
-    connection = new Connection("wss://localhost:4567/room");
+    connection = new Connection("ws://localhost:4567/connection");
     $home =$("#home");
     $settings = $("#settings");
     $custom = $("#custom");
@@ -258,7 +258,7 @@ class Countdown {
 
 class Connection {
     constructor(socket) {
-        this.connection = new WebSocket(socket, 'json');
+        this.connection = new WebSocket(socket);
         this.connection.onopen = function () {
             console.log('Opened connection.');
         };

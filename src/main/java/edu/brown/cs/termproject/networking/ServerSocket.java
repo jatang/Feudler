@@ -59,7 +59,6 @@ public class ServerSocket {
     JsonObject connMessage = new JsonObject();
 
     connMessage.addProperty("type", MESSAGE_TYPE.CONNECT.ordinal());
-    connMessage.addProperty("payload", "");
 
     session.getRemote().sendString(connMessage.toString());
   }

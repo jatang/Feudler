@@ -1,3 +1,4 @@
+<!--NOTE: REQUIRES ALL THE CSS/JS FILES TO BE IN THIS DIRECTORY-->
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -7,18 +8,18 @@
 	    <!-- In real-world webapps, css is usually minified and
 	         concatenated. Here, separate normalize from our code, and
 	         avoid minification for clarity. -->
-	    <link rel="stylesheet" href="normalize.css">
-	    <link rel="stylesheet" href="html5bp.css">
+	    <link rel="stylesheet" href="static/css/normalize.css">
+	    <link rel="stylesheet" href="static/css/html5bp.css">
 	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css">
-	    <link rel="stylesheet" href="main.css">
+	    <link rel="stylesheet" href="static/css/main.css">
  	</head>
  	<body>
-		<script src="jquery-2.1.1.js"></script>
+		<script src="static/js/jquery-2.1.1.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
-		<script src="main-ui.js"></script>
+		<script src="static/js/main-ui.js"></script>
  		<div class="center-content">
 	 		<span class="logo-text">
 	 			<span>G</span>
@@ -36,8 +37,14 @@
 	 			<span>r</span>
 	 		</span>
 	 		<hr>
-	 		<!-- Home page settings box -->
-	 		<div class="settings-box" id="home">
+	 		<!-- Home screen -->
+	 		<div id="home">
+		 		<input type="button" value="Join game" class="home-button" id=join-game></input>
+		 		<br>
+		 		<input type="button" value="Set up game" class="home-button" id=setup-game></input>
+	 		</div>
+	 		<!-- Game configuration settings box -->
+	 		<div class="settings-box" id="settings">
 		 		<h5>Settings</h5>
 		 		<hr>
 		 		<fieldset>
@@ -64,6 +71,7 @@
 
 				<h5>Category</h5>
 		 		<fieldset>
+		 			<!-- TODO: Foods, Drinks, Actors, Animals -->
 				    <label for="category-any">Anything!</label>
 					<input type="radio" name="category" id="category-any" checked="checked">
 
@@ -97,7 +105,7 @@
 				<div class="query-area left flex">
 					<div id=input-area class="thin-gray-border pad std-text">
 						<span id="query" class="left"></span>
-						<input id="guess" type="text" class="no-footprint left" maxlength="50" onkeydown="if (event.keyCode == 13) checkAnswerSingleplayer()">
+						<input id="guess" type="text" class="no-footprint left" maxlength="50">
 					</div>
 					<div id=submit-area>
 						<div id="submit" class="search-button">
@@ -106,7 +114,7 @@
 						<div id="next-round" class=search-button>Continue!</div>
 					</div>
 				</div>
-				<div class="content-area">
+				<div class="content-area small-margin-bottom">
 					<table id="answer-table-1" class="answer-table thin-gray-border">
 						<tr><td></td></tr>
 						<tr><td></td></tr>
@@ -121,6 +129,15 @@
 						<tr><td></td></tr>
 						<tr><td></td></tr>
 					</table>
+				</div>	
+				<div id="scoreArea" class="center-content content-right">
+					<h5>Score</h5>
+					<h4 id="score" class="std-text">0</h4>
+				</div>
+				<br>
+				<div id="timerArea" class="content-area center-content">
+					<h5>Time Left</h5>
+					<h4 id="timer" class="std-text"></h4>
 				</div>
 			</div>
 

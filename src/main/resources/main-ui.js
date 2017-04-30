@@ -1,10 +1,19 @@
+const CONNECT = 0;
+const CREATE_ROOM = 1;
+const CUSTOM_QUERY = 2;
+const NEW_GAME = 3;
+const NEW_ROUND = 4;
+const USER_JOIN = 5;
+const USER_LEFT = 6;
+const PLAYER_GUESS = 7;
+const USER_CHAT = 8;
+
 const MAX_ROUNDS = 5;
-let roundsRemaining;
-let roundOver;
-let currentQuery;
-let boxesFilled = [false, false, false, false, false, false, false, false, false, false];
+let game;
+
 // Views
 let $home;
+let $settings;
 let $custom;
 let $playSingle;
 // Radio buttons
@@ -13,25 +22,87 @@ let $categoryCustom;
 let $categoryScience;
 let $modeMeta;
 let $modeStandard;
-// Slider
+// Sliderle
 let $sliderRounds;
 // Play buttons
 let $nextRound;
 let $submit;
+// Display elements
+let $score
+let $timer;
+
+let $guess;
+
+const connection = new WebSocket("ws://localhost:4567/room", 'json');
+		connection.onopen = function () {
+			console.log('Opened connection.');
+		}
+		connection.onerror = function (error) {
+		  console.log('Error Logged: ' + error); //log errors
+		};
+		connection.onmessage = function (message) {
+			switch (message.type) {
+				case CREATE_ROOM:
+					game.id = message.roomId;
+					connection.send(createJoinMessage());
+					connection.send(createNewGameMessage());
+					break;
+				case USER_JOIN:
+					game.userId = message.userId;
+					break;
+				case NEW_ROUND:
+					game.round.setup(message.query);
+				case PLAYER_GUESS:	
+				//TODO: Make sure answer is correct AND hasn't been guessed yet
+					reveal(message.suggestion, message.suggestionIndex, message.score, false);
+				default:
+					console.log("Unknown message type received: " + message.type);
+			}
+		}
+
+function (answer, index, score, flagMissed) {
+	const revealedContent = "<div class='std-text'><div style='float: left; font-weight: 700;'>"
+		+ answer + "</div><div style='float: right; color: blue;'>"
+		+ score + "</div></div>";
+	if (index >= 0) {
+		let $toUpdate;
+		if (index < 5) {
+			$toUpdate = $("#answer-table-1 tr:nth-child(" + (index + 1) + ") td");
+		} else if (this.rank <= 9) {
+			$toUpdate = $("#answer-table-2 tr:nth-child(" + (index - 4) + ") td");
+		}
+		$toUpdate.html(revealedContent);
+		if (flagMissed) {
+			$toUpdate.addClass("missed");
+		} else {
+			answers.add(suggestion);
+		}
+		addPoints(score);
+
+		if (answers.size >= game.round.size) {
+			game.round.end();
+		}
+	} else {
+		console.log("Invalid index provided: " + index);
+	}
+}
 
 $(document).ready(() => {
-	$home = $("#home");
+	$home =$("#home");
+	$settings = $("#settings");
 	$custom = $("#custom");
 	$playSingle = $("#play-single");
+
+	$settings.addClass("hide", 0);
 	$custom.addClass("hide", 0);
 	$playSingle.addClass("hide", 0);
 
 	$nextRound = $("#next-round");
 	$nextRound.addClass("hide", 0);
-	$nextRound.click(() => newRoundFromQuery("What does the fox"));
+	$nextRound.click(() => game.nextRound());
 
 	$submit = $("#submit");
-	$submit.click(() => checkAnswerSingleplayer());
+	$submit.click(() => game.round.checkAnswer());
 
 
 	// Sets up buttons.
@@ -46,34 +117,51 @@ $(document).ready(() => {
 	$categoryScience = $("#category-science"); 
 	$modeMeta = $("#mode-meta");
 	$modeStandard = $("#mode-standard");
+	$score = $("#score");
+	$timer = $("#timer");
+	$guess = $("#guess");
+
+	$guess.keydown((event) => {
+		if (event.keyCode == 13) {
+			game.round.checkAnswer();
+		}
+	})
 
 	// Deals with making sure incompatible settings can't be chosen together
 	$modeMeta.change(() => {
 		if ($modeMeta[0].checked) {
 			$categoryCustom.checkboxradio("disable");
-			$sliderRounds.slider("disable");
 		}
 	})
 	$modeStandard.change(() => {
 		if ($modeStandard[0].checked) {
 			$categoryCustom.checkboxradio("enable");
-			$sliderRounds.slider("enable");
 		}
 	});
 	$categoryCustom.change(() => {
 		if ($categoryCustom[0].checked) {
 			$modeMeta.checkboxradio("disable");
+			$sliderRounds.slider("disable");
 		}
 	});
 	$categoryAny.change(() => {
 		if ($categoryAny[0].checked) {
 			$modeMeta.checkboxradio("enable");
+			$sliderRounds.slider("enable");
 		}
 	});
 	$categoryScience.change(() => {
 		if ($categoryScience[0].checked) {
 			$modeMeta.checkboxradio("enable");
+			$sliderRounds.slider("enable");
 		}
+	});
+
+	const $setUpButton = $("#setup-game");
+	$setUpButton.click(() => {
+		$home.hide("fade", () => {
+			$settings.show("fade");
+		})
 	});
 
 	// Sets up configure button and handler to switch to custom
@@ -81,12 +169,12 @@ $(document).ready(() => {
 	const $configButton = $("#configure-game");
 	$configButton.click(() => {
 		if ($categoryCustom[0].checked) {
-			$home.hide("drop", {direction: "left"}, () => {
+			$settings.hide("drop", {direction: "left"}, () => {
 				$custom.show("drop", {direction: "right"});
 			});
 		} else {
 			startGame();
-			$home.hide("fade", () => {
+			$settings.hide("fade", () => {
 				$playSingle.show("fade");
 			});
 		}
@@ -96,7 +184,7 @@ $(document).ready(() => {
 	const $backButton = $("#button-back");
 	$backButton.click(() => {
 		$custom.hide("drop", {direction: "right"}, () => {
-			$home.show("drop", {direction: "left"})
+			$settings.show("drop", {direction: "left"})
 		});
 	});
 
@@ -158,121 +246,209 @@ function setUpButtons() {
 	});
 }
 
-// In singleplayer, checks the user's answer and updates the board or alerts as
-// necessary.
-function checkAnswerSingleplayer() {
-	// This is a stub implementation.
-	if (roundOver) {
-		return;
-	}
-	const $guess = $("#guess");
-	const val = $guess.val();
-	$guess.val("");
-	switch (val) {
-		case "subway":
-			reveal(0, "subway", 100000);
-			break;
-		case "weigh":
-			reveal(1, "weigh", 50000);
-			break;
-		case "play":
-			reveal(2, "play", 20000);
-			break;
-		case "spray":
-			reveal(3, "spray", 10000)
-			break;
-		case "pay":
-			reveal(4, "pay", 5000);
-			break;
-		case "kyrie":
-			reveal(5, "kyrie", 2000);
-			break;
-		case "pray":
-			reveal(6, "pray", 1000);
-			break;
-		case "pompeii":
-			reveal(7, "pompeii", 500);
-			break;
-		case "neigh":
-			reveal(8, "neigh", 100);
-			break;
-		case "say":
-			reveal(9, "say", 0);
-			break;
-		default:
-			return;
-	}
-}
-
+// Is called when the play button is first clicked. Should construct a new
+// Round with a query appropriate to the user's chosen settings.
 function startGame() {
-	roundsRemaining = $sliderRounds.slider("value");
-	newRoundFromQuery("What does the fox");
+	game = new Game($("#player-type-multi")[0].checked, $sliderRounds.slider("value"), true;
+	game.nextRound();
 }
 
-// Updates the corresponding box with the given word and score.
-function reveal(boxNumber, word, score) {
-	const revealedContent = "<div class='std-text'><div style='float: left; font-weight: 700;'>" + word + "</div><div style='float: right; color: blue;'>" + score + "</div></div>";
-	if (boxNumber >= 0) {
-		if (boxNumber < 5) {
-			$("#answer-table-1 tr:nth-child(" + (boxNumber + 1) + ") td").html(revealedContent);
-		} else if (boxNumber <= 9) {
-			$("#answer-table-2 tr:nth-child(" + (boxNumber - 4) + ") td").html(revealedContent);
+function formatSeconds(timeInSeconds) {
+	const minutes = Math.floor((timeInSeconds / (60)));
+	const seconds = Math.floor((timeInSeconds % (60)));
+	return minutes + ":" + ((seconds < 10) ? "0" : "") + seconds;
+}
+
+function addPoints(toAdd) {
+	game.score += toAdd;
+	$score.text(game.score);
+}
+
+class Countdown {
+	constructor(initial) {
+		this.initial = initial;
+	}
+
+	tick() {
+		this.initial--;
+		return this.initial;
+	}
+}
+
+// hosting is a boolean flag, true if the user creating the game is the host;
+// false if they're just joining an existing game
+class Game {
+	constructor(multiplayer, roundsRemaining, id, username) {
+		this.score = 0;
+		// Boolean flag
+		this.multiplayer = multiplayer;
+		this.round = undefined;
+		this.roundsRemaining = roundsRemaining;
+		this.id = id;
+		this.userId = "";
+		this.username = username;
+		this.configure();
+	}
+
+	this.configure() {
+		const message = (game.id === "") ? createCreateMessage() : createJoinMessage();
+		connection.send(message);
+	}
+
+	createCreateMessage() {
+		const message = new Object();
+		message.type = CREATE_ROOM;
+		return JSON.stringify(message);
+	}
+
+	createJoinMessage() {
+		const message = new Object();
+		message.type = USER_JOIN;
+		message.roomId = this.id;
+		message.username = this.username;
+		return JSON.stringify(message);
+	}
+
+	createNewGameMessage() {
+		const message = new Object();
+		message.type = NEW_GAME;
+		message.roomId = this.id;
+		const settings = new Object();
+		settings.type = game.multiplayer ? "multiplayer" : "singleplayer";
+		settings.mode = $modeMeta[0].checked ? "meta" : "standard"
+		settings.rounds = game.roundsRemaining;
+		message.settings = JSON.stringify(settings);
+		return JSON.stringify(message);
+	}
+
+	createNewRoundMessage() {
+		const message = new Object();
+		message.type = NEW_ROUND;
+		message.roomId = game.id;
+		return JSON.stringify(message);
+	}
+
+	createGuessMessage(query) {
+		const message = new Object();
+		message.type = PLAYER_GUESS;
+		message.roomId = game.id;
+		message.guess = query;
+		return JSON.stringify(message);
+	}
+
+	nextRound() {
+		if (this.roundsRemaining > 0) {
+			$nextRound.hide("fade", () => {
+				$submit.show("fade");
+			});
+			// const query = "What does the fox";
+			// const answers = new Map([
+			// 	["subway", new Box(0, "subway", 100000)],
+			// 	["weigh", new Box(1, "weigh", 50000)],
+			// 	["play", new Box(2, "play", 20000)],
+			// 	["spray", new Box(3, "spray", 10000)],
+			// 	["pay", new Box(4, "pay", 5000)],
+			// 	["kyrie", new Box(5, "kyrie", 2000)],
+			// 	["pray", new Box(6, "pray", 1000)],
+			// 	["pompeii", new Box(7, "pompeii", 500)],
+			// 	["neigh", new Box(8, "neigh", 100)],
+			// 	["say", new Box(9, "say", 0)]
+			// 	]);
+			this.round = new Round(30, false);
+			this.roundsRemaining--;
+			this.round.start();
+		} else {
+			window.location.reload();
+			//$.get(HOMEPAGE);d
 		}
 	}
-	boxesFilled[boxNumber] = true;
-	if (boxesFilled.filter((elt) => {return elt}).length >= 2) {
-		endRound();
+}
+
+class Round {
+	// Duration is in seconds
+	constructor(duration, multiplayer) {
+		this.query = "";
+		this.answers = new Set();
+		this.over = false;
+		this.size = answers.size;
+		this.duration = duration;
+		this.multiplayer = multiplayer;
+		this.countdown = new Countdown(duration);
+		this.timer = undefined;
+		connection.send(createNewRoundMessage());
 	}
-}
 
-function endRound() {
-	roundOver = true;
-	$submit.hide("fade", () => {
-		$nextRound.show("fade");
-	});
-}
-
-function newRoundFromQuery(query) {
-	if (roundsRemaining > 0) {
-		$nextRound.hide("fade", () => {
-			$submit.show("fade");
+	setUp(query) {
+		this.query = query;
+		const size = this.size;
+		$("#query").text(this.query);
+		$("#answer-table-1 tr td").each((index, elt) => {
+			const boxNum = index + 1;
+			if (boxNum > size) {
+				$(elt).addClass("unavailable");
+			} else {
+				$(elt).html((index, html) => {
+					return boxNum;
+				}).removeClass("missed unavailable");
+			}
 		});
-		currentQuery = query;
-		boxesFilled = boxesFilled.fill(false, 0, 10);
-		$("#query").text(currentQuery);
-		$("#answer-table-1 tr td").html((index, html) => {
-			return index + 1;
-		})
-		$("#answer-table-2 tr td").html((index, html) => {
-			return index + 6;
-		})
-		roundOver = false;
-		roundsRemaining--;
-	} else {
-		window.location.reload();
-		//$.get(HOMEPAGE);
+		$("#answer-table-2 tr td").each((index, elt) => {
+			const boxNum = index + 6;
+			if (boxNum > size) {
+				$(elt).addClass("unavailable");
+			} else {
+				$(elt).html((index, html) => {
+					return boxNum;
+				}).removeClass("missed unavailable");
+			}
+		});
+	}
+
+	start() {
+		$timer.text(formatSeconds(this.duration));
+		this.timer = setInterval(() => {
+			const curTime = this.countdown.tick();
+			if (curTime < 0) {
+				this.end();
+			} else {
+				$timer.text(formatSeconds(curTime));
+				if (curTime === 0) {
+					this.end();
+				}
+			}
+		}, 1000);
+	}
+
+	end() {
+		//TODO; fix
+		this.over = true;
+		clearInterval(this.timer);
+		this.answers.forEach((value, key, map) => {
+			const box = value;
+			// Reveal missed answers
+			if(!box.guessed) {
+				box.reveal(true, 0);
+			}
+		});
+		$submit.hide("fade", () => {
+			$nextRound.show("fade");
+		});
+	}
+
+	isOver() {
+		return this.over;
+	}
+
+	getQuery() {
+		return this.query;
+	}
+
+	checkAnswer() {
+		if (this.isOver()) {
+			return;
+		}
+		const val = $guess.val();
+		$guess.val("");
+		connection.send(createGuessMessage(val));
 	}
 }
-
-function newRound() {
-	// Get new query from server, then call newRound(newQuery);
-}
-
-// TODO: Set up checkAnswerSingleplayer() function, and call it when submit button is clicked;
-// should send the user's input via POST to the server; if wrong, the server should
-// indicate so; if right, the server should send (1) the rank of the guessed suggestion
-// (1 - 10), and (2) the # of points awarded to the guesser.
-
-// TODO: Set up checkAnswerMultiplayer() function, which is similar to the above,
-// except it also passes the player (id, probably) who made the guess. If they were
-// right, returns the same data, and the server should also update its internal
-// scoreboard and board (words guessed yet, etc.) representation, which will be
-// provided in constant update() queries by all clients. 
-
-// For the turn-based mode: If they were wrong, indicate so, and also change
-// whose turn it is on the server side. If it isn't their turn, indicate so.
-
-// For the FFA mode: If they were wrong, indicate so.
-
-// TODO: (Needed for multiplayer only) Set up update() function, which will
-// grab score, turn, and board updates from the server.

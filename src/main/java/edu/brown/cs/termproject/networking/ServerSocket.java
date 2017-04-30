@@ -169,6 +169,8 @@ public class ServerSocket {
             updatePayload = new JsonObject();
 
             updatePayload.addProperty("query", roundQuery.getQuery());
+            updatePayload.addProperty("numQueries",
+                roundQuery.getResponses().size());
 
             updateMessage.addProperty("type", MESSAGE_TYPE.NEW_ROUND.ordinal());
             updateMessage.addProperty("payload", updatePayload.toString());

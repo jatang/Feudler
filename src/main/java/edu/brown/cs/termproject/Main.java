@@ -9,6 +9,7 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 
 import edu.brown.cs.termproject.networking.ServerSocket;
+import edu.brown.cs.termproject.networking.Suggestions;
 import freemarker.template.Configuration;
 import spark.ExceptionHandler;
 import spark.ModelAndView;
@@ -41,7 +42,10 @@ public final class Main {
 
   private void run() {
 
-    runSparkServer(4567);
+    Suggestions.getGoogleSuggestions("soda mixed with ")
+        .forEach((c) -> System.out.println(c));
+
+    // runSparkServer(4567);
   }
 
   private static void runSparkServer(int port) {

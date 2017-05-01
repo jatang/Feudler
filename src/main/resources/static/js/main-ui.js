@@ -231,7 +231,6 @@ function setUpButtons() {
 function startGame() {
     game = new Game(true, $("#player-type-multi")[0].checked, $sliderRounds.slider("value"), "", "");
     game.configure();
-    connection.sendNewRoundMessage();
 }
 
 function formatSeconds(timeInSeconds) {
@@ -325,6 +324,7 @@ class Connection {
         game.id = payload.roomId;
         this.sendJoinMessage();
         this.sendNewGameMessage();
+        this.sendNewRoundMessage();
     }
 
     sendJoinMessage() {

@@ -214,8 +214,8 @@ public class ServerSocket {
                 for(Suggestion sugg : roundQuery.getResponses().asList()) {
                 	JsonObject suggestionData = new JsonObject();
                 	suggestionData.addProperty("suggestion", sugg.getResponse());
-                	suggestionData.addProperty("suggestionIndex", sugg.getScore() - 1);
-                	suggestionData.addProperty("score", (11 - sugg.getScore()) * 1000);
+                	suggestionData.addProperty("suggestionIndex", sugg.getScore());
+                	suggestionData.addProperty("score", (10 - sugg.getScore()) * 1000);
                 	
                 	suggestions.add(suggestionData);
                 }
@@ -285,8 +285,8 @@ public class ServerSocket {
 		            for(Suggestion sugg : room.getGame().getGuessedSuggestions()) {
 		            	JsonObject suggestionData = new JsonObject();
 		            	suggestionData.addProperty("suggestion", sugg.getResponse());
-		            	suggestionData.addProperty("suggestionIndex", sugg.getScore() - 1);
-		            	suggestionData.addProperty("score", (11 - sugg.getScore()) * 1000);
+		            	suggestionData.addProperty("suggestionIndex", sugg.getScore());
+		            	suggestionData.addProperty("score", (10 - sugg.getScore()) * 1000);
 		            	
 		            	guessed.add(suggestionData);
 		            }
@@ -344,8 +344,8 @@ public class ServerSocket {
             Suggestion sugg = res.get();
 
             updatePayload.addProperty("suggestion", sugg.getResponse());
-            updatePayload.addProperty("suggestionIndex", sugg.getScore() - 1);
-            updatePayload.addProperty("score", (11 - sugg.getScore()) * 1000);
+            updatePayload.addProperty("suggestionIndex", sugg.getScore());
+            updatePayload.addProperty("score", (10 - sugg.getScore()) * 1000);
             updatePayload.addProperty("userId", found.getId());
             updatePayload.addProperty("playerScore",
                 room.getGame().getPlayerScore(found));

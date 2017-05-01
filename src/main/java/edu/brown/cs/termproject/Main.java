@@ -51,9 +51,22 @@ public final class Main {
 
     FreeMarkerEngine freeMarker = createEngine();
 
-    Spark.webSocket("/room", ServerSocket.class);
-    Spark.get("/:room", new RoomHandler(), freeMarker);
+    Spark.webSocket("/connection", ServerSocket.class);
+    Spark.get("/", new HomeHandler(), freeMarker);
+    Spark.get("/room/:room", new RoomHandler(), freeMarker);
 
+  }
+
+  /**
+   * Handle requests to the main page of our website.
+   */
+  private static class HomeHandler implements TemplateViewRoute {
+    @Override
+    public ModelAndView handle(Request req, Response res) {
+
+      Map<String, String> variables = ImmutableMap.of("roomId", "");
+      return new ModelAndView(variables, "room.ftl");
+    }
   }
 
   /**

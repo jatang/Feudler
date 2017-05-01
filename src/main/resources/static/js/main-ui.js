@@ -207,8 +207,11 @@ function reveal(answer, index, score, flagMissed) {
             }
         }
 
-        if (game.round.answersSeen.size >= game.round.size && game.hosting) {
+        if (game.round.answersSeen.size >= game.round.size) {
             game.round.end();
+            if (game.hosting) {
+                connection.sendEndRound();
+            }
         }
     } else {
         console.log("Invalid index provided: " + index);
@@ -240,7 +243,8 @@ function formatSeconds(timeInSeconds) {
 }
 
 function addPoints(toAdd) {
-    game.score += toAdd;
+    game.score += Number(toAdd);
+    console.log("score: " + game.score);
     $score.text(game.score);
 }
 
@@ -283,6 +287,7 @@ class Connection {
                     break;
                 case PLAYER_GUESS:
                     //TODO: Make sure answer is correct AND hasn't been guessed yet
+                    console.log("hih");
                     connection.receiveGuessMessage(payload);
                     break;
                 default:
@@ -374,7 +379,7 @@ class Connection {
     }
 
     receiveNewRoundMessage(payload) {
-        game.nextRound(payload.query, payload.numResponses, 30, false);
+        game.nextRound(payload.query, payload.numResponses, 30);
     }
 
     sendGuessMessage(query) {
@@ -414,8 +419,8 @@ class Connection {
     }
 
     receiveEndRound(payload) {
-        payload.remaining.forEach((value, key, map) => {
-            reveal(value.answer, value.index, value.score, true);
+        payload.remaining.forEach((elt) => {
+            reveal(elt.answer, elt.index, elt.score, true);
         });
     }
 }
@@ -448,17 +453,17 @@ class Game {
         const message = (this.id === "") ? connection.sendCreateMessage() : connection.sendJoinMessage();
     }
 
-    nextRound(query, size, duration, hosting) {
+    nextRound(query, size, duration) {
         if (this.roundsRemaining > 0) {
             $nextRound.hide("fade", () => {
                 $submit.show("fade");
             });
-            this.round = new Round(query, size, duration, hosting);
+            this.round = new Round(query, size, duration, this.hosting);
             this.roundsRemaining--;
             this.round.start();
         } else {
             console.log("ERROR: no rounds remaining");
-            window.location.replace("/room");
+            window.location.replace("/");
         }
     }
 }
@@ -502,12 +507,18 @@ class Round {
         $timer.text(formatSeconds(this.duration));
         this.timer = setInterval(() => {
             const curTime = this.countdown.tick();
-            if (curTime < 0 && this.hosting) {
+            if (curTime < 0) {
                 this.end();
+                if (this.hosting) {
+                    connection.sendEndRound();
+                }
             } else {
                 $timer.text(formatSeconds(curTime));
-                if (curTime === 0 && this.hosting) {
+                if (curTime === 0) {
                     this.end();
+                    if (this.hosting) {
+                        connection.sendEndRound();
+                    }
                 }
             }
         }, 1000);
@@ -515,7 +526,6 @@ class Round {
 
     end() {
         this.over = true;
-        clearInterval(this.timer);
         $submit.hide("fade", () => {
             if (this.hosting) {
                 $nextRound.show("fade")

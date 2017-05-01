@@ -23,7 +23,7 @@ public class Room {
   private final String roomId;
   private final Session creator;
   private final Map<Session, User> userMap = new ConcurrentHashMap<>();
-  private int userId = -1;
+  private int userId = 0;
 
   private Game game = null;
   // Store Settings if needed

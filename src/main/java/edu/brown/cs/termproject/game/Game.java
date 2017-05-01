@@ -74,6 +74,20 @@ public class Game {
 
     return queries.get(currRound);
   }
+  
+  /**
+   * Gets the current QueryResponses from the Game if available.
+   *
+   * @return Returns a QueryResponses object representing the current query for the
+   *         round.
+   */
+  public synchronized QueryResponses getCurrentQueryResponses() {
+    if (currRound >= queries.size()) {
+      return null;
+    }
+
+    return queries.get(currRound);
+  }
 
   /**
    * Scores a users guess if the User is a Player in the Game.

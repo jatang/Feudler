@@ -3,10 +3,11 @@ const CREATE_ROOM = 1;
 const CUSTOM_QUERY = 2;
 const NEW_GAME = 3;
 const NEW_ROUND = 4;
-const USER_JOIN = 5;
-const USER_LEFT = 6;
-const PLAYER_GUESS = 7;
-const USER_CHAT = 8;
+const ROUND_END = 5;
+const USER_JOIN = 6;
+const USER_LEFT = 7;
+const PLAYER_GUESS = 8;
+const USER_CHAT = 9;
 
 const MAX_ROUNDS = 5;
 let game;

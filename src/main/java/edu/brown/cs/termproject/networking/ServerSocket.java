@@ -16,6 +16,7 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import com.google.common.base.Optional;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
@@ -48,7 +49,7 @@ public class ServerSocket {
   }
 
   private static enum MESSAGE_TYPE {
-    CONNECT, CREATE_ROOM, CUSTOM_QUERY, NEW_GAME, NEW_ROUND, USER_JOIN,
+    CONNECT, CREATE_ROOM, CUSTOM_QUERY, NEW_GAME, NEW_ROUND, ROUND_END, USER_JOIN,
     USER_LEFT, PLAYER_GUESS, USER_CHAT
   }
 
@@ -187,6 +188,46 @@ public class ServerSocket {
             }
           }
           break;
+        case ROUND_END:
+        	// Payload contains room link/id
+
+            // Check whether user requesting new round is owner. If so, end
+            // current round in room. Otherwise do nothing.
+          	
+            room = ROOMS.get(payload.get("roomId").getAsString());
+            if (room == null) {
+              return;
+            }
+
+            if (session.equals(room.getCreator())) {
+              QueryResponses roundQuery = room.getGame().getCurrentQueryResponses();
+              if (roundQuery != null) {
+                updateMessage = new JsonObject();
+                updatePayload = new JsonObject();
+                JsonArray suggestions = new JsonArray();
+                
+                for(Suggestion sugg : roundQuery.getResponses().asList()) {
+                	JsonObject suggestionData = new JsonObject();
+                	updatePayload.addProperty("suggestion", sugg.getResponse());
+                    updatePayload.addProperty("suggestionIndex", sugg.getScore() - 1);
+                    updatePayload.addProperty("score", (11 - sugg.getScore()) * 1000);
+                	
+                	suggestions.add(suggestionData);
+                }
+
+                updatePayload.addProperty("suggestions", suggestions.toString());
+
+                updateMessage.addProperty("type",
+                    MESSAGE_TYPE.NEW_ROUND.ordinal());
+                updateMessage.addProperty("payload", updatePayload.toString());
+
+                // Send back response (round query) on NEW_ROUND.
+                for (Session sess : room.getUserSessions()) {
+                  sess.getRemote().sendString(updateMessage.toString());
+                }
+              }
+            }
+        	break;
         case USER_JOIN:
           // Payload contains room link/id, user username
 
@@ -247,7 +288,7 @@ public class ServerSocket {
 
             updatePayload.addProperty("suggestion", sugg.getResponse());
             updatePayload.addProperty("suggestionIndex", sugg.getScore() - 1);
-            updatePayload.addProperty("score", sugg.getScore() * 1000);
+            updatePayload.addProperty("score", (11 - sugg.getScore()) * 1000);
             updatePayload.addProperty("userId", found.getId());
             updatePayload.addProperty("playerScore",
                 room.getGame().getPlayerScore(found));

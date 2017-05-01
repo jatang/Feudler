@@ -272,7 +272,7 @@ class Connection {
         this.connection.onmessage = function (messageEvent) {
             const message = JSON.parse(messageEvent.data);
             const payload = JSON.parse(message.payload);
-            console.log(message);
+            // console.log(message);
             switch (message.type) {
                 case CONNECT:
                     console.log("websocket connected");
@@ -294,6 +294,7 @@ class Connection {
                     break;
                 case ROUND_END:
                     connection.receiveEndRound(payload);
+                    break;
                 default:
                     console.log("Unknown message type received: " + message.type);
             }
@@ -429,8 +430,7 @@ class Connection {
     }
 
     receiveEndRound(payload) {
-        console.log(payload);
-        payload.suggestions.forEach((elt) => {
+        JSON.parse(payload.suggestions).forEach((elt) => {
             if (!game.round.answersSeen.has(elt.suggestion))
                 reveal(elt.suggestion, elt.suggestionIndex, elt.score, true);
         });
@@ -496,7 +496,7 @@ class Round {
         $("#answer-table-1 tr td").each((index, elt) => {
             const boxNum = index + 1;
             if (boxNum > size) {
-                $(elt).addClass("unavailable");
+                $(elt).text("").addClass("unavailable");
             } else {
                 $(elt).html((index, html) => {
                     return boxNum;
@@ -506,7 +506,7 @@ class Round {
         $("#answer-table-2 tr td").each((index, elt) => {
             const boxNum = index + 6;
             if (boxNum > size) {
-                $(elt).addClass("unavailable");
+                $(elt).text("").addClass("unavailable");
             } else {
                 $(elt).html((index, html) => {
                     return boxNum;

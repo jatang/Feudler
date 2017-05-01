@@ -237,38 +237,77 @@ public class ServerSocket {
           // user to room.
         	
           room = ROOMS.get(payload.get("roomId").getAsString());
-          if (room == null) {
-        	updateMessage = new JsonObject();
-            updatePayload = new JsonObject();
+          if (room != null) {
 
-            updatePayload.addProperty("userId", "");
-            updatePayload.addProperty("username", "");
-
-            updateMessage.addProperty("type", MESSAGE_TYPE.USER_JOIN.ordinal());
-            updateMessage.addProperty("payload", updatePayload.toString());
-              
-            session.getRemote().sendString(updateMessage.toString());
-            return;
+	          User addedUser =
+	              room.addUser(session, payload.get("username").getAsString());
+	          
+	          if (addedUser != null) {
+	        	int score;
+	            updateMessage = new JsonObject();
+	            updatePayload = new JsonObject();
+	
+	            updatePayload.addProperty("userId", addedUser.getId());
+	            updatePayload.addProperty("username", addedUser.getUsername());
+	            score = room.getGame() == null ? 0 : room.getGame().getPlayerScore(addedUser);
+	            updatePayload.addProperty("score", score);
+	
+	            updateMessage.addProperty("type", MESSAGE_TYPE.USER_JOIN.ordinal());
+	            updateMessage.addProperty("payload", updatePayload.toString());
+	
+	            // Send back response (user id, username) on USER_JOIN
+	            for (Session sess : room.getUserSessions()) {
+	            	if(!sess.equals(session)) {
+	            		sess.getRemote().sendString(updateMessage.toString());
+	            	}
+	            }
+	            
+	            JsonArray users = new JsonArray();
+	            for(User user : room.getUsers()) {
+	            	if(!user.equals(addedUser)) {
+		            	JsonObject userData = new JsonObject();
+		            	userData.addProperty("userId", user.getId());
+		            	userData.addProperty("username", user.getUsername());
+		            	score = room.getGame() == null ? 0 : room.getGame().getPlayerScore(user);
+		 	            updatePayload.addProperty("score", score);
+		            	
+		            	users.add(userData);
+	            	}
+	            }
+	            
+	            JsonArray guessed = new JsonArray();
+	            if(room.getGame() != null) {
+		            for(Suggestion sugg : room.getGame().getGuessedSuggestions()) {
+		            	JsonObject suggestionData = new JsonObject();
+		            	suggestionData.addProperty("suggestion", sugg.getResponse());
+		            	suggestionData.addProperty("suggestionIndex", sugg.getScore() - 1);
+		            	suggestionData.addProperty("score", (11 - sugg.getScore()) * 1000);
+		            	
+		            	guessed.add(suggestionData);
+		            }
+	            }
+	            
+	            updatePayload.addProperty("users", users.toString());
+	            updatePayload.addProperty("guessed", guessed.toString());
+	            
+	            updateMessage.addProperty("payload", updatePayload.toString());
+	            
+	            session.getRemote().sendString(updateMessage.toString());
+	            return;
+	          }
           }
+          
+          updateMessage = new JsonObject();
+          updatePayload = new JsonObject();
 
-          User addedUser =
-              room.addUser(session, payload.get("username").getAsString());
-          if (addedUser != null) {
-        	  
-            updateMessage = new JsonObject();
-            updatePayload = new JsonObject();
+          updatePayload.addProperty("userId", "");
+          updatePayload.addProperty("username", "");
+          updatePayload.addProperty("score", "");
 
-            updatePayload.addProperty("userId", addedUser.getId());
-            updatePayload.addProperty("username", addedUser.getUsername());
-
-            updateMessage.addProperty("type", MESSAGE_TYPE.USER_JOIN.ordinal());
-            updateMessage.addProperty("payload", updatePayload.toString());
-
-            // Send back response (user id, username) on USER_JOIN
-            for (Session sess : room.getUserSessions()) {
-              sess.getRemote().sendString(updateMessage.toString());
-            }
-          }
+          updateMessage.addProperty("type", MESSAGE_TYPE.USER_JOIN.ordinal());
+          updateMessage.addProperty("payload", updatePayload.toString());
+            
+          session.getRemote().sendString(updateMessage.toString());
 
           break;
         case PLAYER_GUESS:
@@ -362,6 +401,7 @@ public class ServerSocket {
       }
 
     } catch (Exception e) {
+    	e.printStackTrace();
       System.out.println("ERROR: Unexpected message: " + received.toString());
     }
   }

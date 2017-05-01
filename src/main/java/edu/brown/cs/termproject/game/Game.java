@@ -77,6 +77,15 @@ public class Game {
   }
   
   /**
+   * Gets the Set of Suggestion already guessed for the current round. 
+   *
+   * @return Returns a Set of Suggestion already guessed for the current round. 
+   */
+  public synchronized Set<Suggestion> getGuessedSuggestions() {
+	  return new HashSet<>(alreadyGuessed);
+  }
+  
+  /**
    * Moves the Game to the next round if queries are still unplayed.
    *
    * @return Returns a QueryResponses object representing the query for the new

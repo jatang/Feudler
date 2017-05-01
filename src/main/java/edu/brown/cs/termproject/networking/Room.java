@@ -2,6 +2,7 @@ package edu.brown.cs.termproject.networking;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +53,11 @@ public class Room {
    */
   public synchronized User addUser(Session session, String username) {
     userMap.put(session, new User(userId++, username, false));
-    return userMap.get(session);
+    User added = userMap.get(session);
+    if(game != null && added != null && !added.isSpectating()) {
+    	game.addPlayer(added);
+    }
+    return added;
   }
 
   /**
@@ -118,6 +123,15 @@ public class Room {
    */
   public Session getCreator() {
     return creator;
+  }
+  
+  /**
+   * Gets all the Room users.
+   *
+   * @return Returns a Collection of User representing all the Users in the Room.
+   */
+  public Collection<User> getUsers() {
+    return userMap.values();
   }
 
   /**

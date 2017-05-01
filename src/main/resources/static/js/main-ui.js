@@ -271,31 +271,29 @@ class Connection {
         };
         this.connection.onmessage = function (messageEvent) {
             const message = JSON.parse(messageEvent.data);
-	    let payload;
+            const payload = JSON.parse(message.payload);
             console.log(message);
-
             switch (message.type) {
                 case CONNECT:
                     console.log("websocket connected");
                     break;
                 case CREATE_ROOM:
-		    payload = JSON.parse(message.payload);
                     connection.receiveCreateMessage(payload);
                     break;
                 case USER_JOIN:
-		    payload = JSON.parse(message.payload);
                     connection.receiveJoinMessage(payload);
                     break;
+                case NEW_GAME:
+                    // Nothing needed.
+                    break;
                 case NEW_ROUND:
-		    payload = JSON.parse(message.payload);
                     connection.receiveNewRoundMessage(payload);
                     break;
                 case PLAYER_GUESS:
-                    //TODO: Make sure answer is correct AND hasn't been guessed yet
-		    payload = JSON.parse(message.payload);
-
                     connection.receiveGuessMessage(payload);
                     break;
+                case ROUND_END:
+                    connection.receiveEndRound(payload);
                 default:
                     console.log("Unknown message type received: " + message.type);
             }
@@ -326,7 +324,6 @@ class Connection {
     }
 
     receiveCreateMessage(payload) {
-        console.log("server gave us payload: " + payload);
         game.id = payload.roomId;
         this.sendJoinMessage();
         this.sendNewGameMessage();
@@ -341,8 +338,6 @@ class Connection {
                 username: game.username
             }
         };
-        console.log(message);
-        console.log(JSON.stringify(message));
         this.connection.send(JSON.stringify(message));
         // message.userId = 5;
         // this.receiveJoinMessage(message);
@@ -408,12 +403,21 @@ class Connection {
     }
 
     receiveGuessMessage(payload) {
-        reveal(payload.suggestion, payload.suggestionIndex, payload.score, false);
+        if (payload.suggestion === "") {
+            // TODO: action on wrong guess
+        } else {
+            reveal(payload.suggestion, payload.suggestionIndex, payload.score, false);
+        }
     }
 
     sendEndRound() {
-        const message = {};
-        // TODO: actually implement for Websockets
+        const message = {
+            type: ROUND_END,
+            payload: {
+                roomId: game.id
+            }
+        };
+        this.connection.send(JSON.stringify(message));
         // const rem = new Array();
         // for (const box of this.answers.values()) {
         //     if (!box.guessed) {
@@ -425,8 +429,10 @@ class Connection {
     }
 
     receiveEndRound(payload) {
-        payload.remaining.forEach((elt) => {
-            reveal(elt.answer, elt.index, elt.score, true);
+        console.log(payload);
+        payload.suggestions.forEach((elt) => {
+            if (!game.round.answersSeen.has(elt.suggestion))
+                reveal(elt.suggestion, elt.suggestionIndex, elt.score, true);
         });
     }
 }
@@ -532,6 +538,7 @@ class Round {
 
     end() {
         this.over = true;
+        clearInterval(this.timer);
         $submit.hide("fade", () => {
             if (this.hosting) {
                 $nextRound.show("fade")

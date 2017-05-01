@@ -218,7 +218,7 @@ public class ServerSocket {
                 updatePayload.addProperty("suggestions", suggestions.toString());
 
                 updateMessage.addProperty("type",
-                    MESSAGE_TYPE.NEW_ROUND.ordinal());
+                    MESSAGE_TYPE.ROUND_END.ordinal());
                 updateMessage.addProperty("payload", updatePayload.toString());
 
                 // Send back response (round query) on NEW_ROUND.

@@ -267,23 +267,28 @@ class Connection {
         };
         this.connection.onmessage = function (messageEvent) {
             const message = JSON.parse(messageEvent.data);
-            const payload = JSON.parse(message.payload);
-            // console.log(message);
+	    let payload;
+            console.log(message);
+
             switch (message.type) {
                 case CONNECT:
                     console.log("websocket connected");
                     break;
                 case CREATE_ROOM:
+		    payload = JSON.parse(message.payload);
                     connection.receiveCreateMessage(payload);
                     break;
                 case USER_JOIN:
+		    payload = JSON.parse(message.payload);
                     connection.receiveJoinMessage(payload);
                     break;
                 case NEW_ROUND:
+		    payload = JSON.parse(message.payload);
                     connection.receiveNewRoundMessage(payload);
                     break;
                 case PLAYER_GUESS:
                     //TODO: Make sure answer is correct AND hasn't been guessed yet
+		    payload = JSON.parse(message.payload);
                     connection.receiveGuessMessage(payload);
                     break;
                 default:

@@ -160,7 +160,7 @@ public class ServerSocket {
           // Check whether user requesting new round is owner. If so, start
           // round
           // game in room otherwise do nothing.
-
+        	
           room = ROOMS.get(payload.get("roomId").getAsString());
           if (room == null) {
             return;
@@ -192,7 +192,7 @@ public class ServerSocket {
 
           // Check whether room id is valid and is accepting users. If so, add
           // user to room.
-
+        	
           room = ROOMS.get(payload.get("roomId").getAsString());
           if (room == null) {
             return;

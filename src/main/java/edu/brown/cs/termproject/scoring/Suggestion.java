@@ -1,6 +1,7 @@
 package edu.brown.cs.termproject.scoring;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents a unique suggestion that google returns. This is one of the
@@ -77,5 +78,25 @@ public class Suggestion implements Cluster {
   @Override
   public int getScore() {
     return score;
+  }
+  
+  @Override
+  public String toString() {
+	  return getResponse();
+  }
+  
+  @Override
+  public boolean equals(Object other) {
+	  if(!(other instanceof Suggestion)) {
+		  return false;
+	  }
+	  
+	  Suggestion otherSuggestion = (Suggestion) other;
+	  return originalPhrase.equals(otherSuggestion.getResponse());
+  }
+  
+  @Override
+  public int hashCode() {
+	  return Objects.hash(getResponse());
   }
 }

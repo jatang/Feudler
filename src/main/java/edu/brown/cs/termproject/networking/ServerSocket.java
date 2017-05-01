@@ -202,7 +202,7 @@ public class ServerSocket {
             }
 
             if (session.equals(room.getCreator())) {
-              QueryResponses roundQuery = room.getGame().getCurrentQueryResponses();
+              QueryResponses roundQuery = room.getGame().endRound();
               if (roundQuery != null) {
                 updateMessage = new JsonObject();
                 updatePayload = new JsonObject();
@@ -238,12 +238,23 @@ public class ServerSocket {
         	
           room = ROOMS.get(payload.get("roomId").getAsString());
           if (room == null) {
+        	updateMessage = new JsonObject();
+            updatePayload = new JsonObject();
+
+            updatePayload.addProperty("userId", "");
+            updatePayload.addProperty("username", "");
+
+            updateMessage.addProperty("type", MESSAGE_TYPE.USER_JOIN.ordinal());
+            updateMessage.addProperty("payload", updatePayload.toString());
+              
+            session.getRemote().sendString(updateMessage.toString());
             return;
           }
 
           User addedUser =
               room.addUser(session, payload.get("username").getAsString());
           if (addedUser != null) {
+        	  
             updateMessage = new JsonObject();
             updatePayload = new JsonObject();
 

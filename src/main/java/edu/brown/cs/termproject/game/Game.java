@@ -1,7 +1,9 @@
 package edu.brown.cs.termproject.game;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.base.Optional;
@@ -23,6 +25,7 @@ public class Game {
   private int currRound = -1;
 
   private final List<QueryResponses> queries;
+  private Set<Suggestion> alreadyGuessed;
   // Mode
   // Category
 
@@ -61,32 +64,42 @@ public class Game {
   }
 
   /**
+   * Gets the current QueryResponses from the Game if available.
+   *
+   * @return Returns a QueryResponses object representing the current query for the
+   *         round.
+   */
+  private synchronized QueryResponses getCurrentQueryResponses() {
+    if (currRound < 0 || currRound >= queries.size()) {
+      return null;
+    }
+    return queries.get(currRound);
+  }
+  
+  /**
    * Moves the Game to the next round if queries are still unplayed.
    *
    * @return Returns a QueryResponses object representing the query for the new
    *         round.
    */
   public synchronized QueryResponses newRound() {
-    currRound++;
-    if (currRound >= queries.size()) {
-      return null;
-    }
-
-    return queries.get(currRound);
+	currRound++;
+    alreadyGuessed = new HashSet<>();
+    return getCurrentQueryResponses();
   }
   
   /**
-   * Gets the current QueryResponses from the Game if available.
+   * Ends the current Game round.
    *
-   * @return Returns a QueryResponses object representing the current query for the
+   * @return Returns a QueryResponses object representing the query for the new
    *         round.
    */
-  public synchronized QueryResponses getCurrentQueryResponses() {
-    if (currRound >= queries.size()) {
-      return null;
+  public synchronized QueryResponses endRound() {
+    QueryResponses curr = getCurrentQueryResponses();
+    if(curr != null) {
+    	alreadyGuessed.addAll(curr.getResponses().asList());
     }
-
-    return queries.get(currRound);
+    return curr;
   }
 
   /**
@@ -102,14 +115,21 @@ public class Game {
   public synchronized Optional<Suggestion> score(User user, String guess) {
     if (playerMap.containsKey(user)) {
 
-      if (currRound >= queries.size()) {
+      if (currRound < 0 || currRound >= queries.size()) {
         return Optional.absent();
       }
 
-      // Save guess
+      // TODO Save guess
 
-      // TODO Make sure that previously guessed answers cannot be replayed.
-      return queries.get(currRound).getResponses().clusterOf(guess);
+      
+      Optional<Suggestion> res = queries.get(currRound).getResponses().clusterOf(guess);
+      if(res.isPresent()) {
+    	  Suggestion closest = res.get();
+    	  if(!alreadyGuessed.contains(closest)) {
+    		  alreadyGuessed.add(closest);
+    		  return res;
+    	  }
+      }
     }
 
     return Optional.absent();

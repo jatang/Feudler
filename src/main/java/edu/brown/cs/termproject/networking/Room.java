@@ -51,7 +51,8 @@ public class Room {
    * @return Returns the User entered if adding succeeded.
    */
   public synchronized User addUser(Session session, String username) {
-    return userMap.put(session, new User(userId++, username, false));
+    userMap.put(session, new User(userId++, username, false));
+    return userMap.get(session);
   }
 
   /**

@@ -2,10 +2,11 @@ package edu.brown.cs.termproject.scoring;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import java.util.Collections;
 import org.junit.Test;
 
 public class Word2VecModelTest {
@@ -59,8 +60,7 @@ public class Word2VecModelTest {
 
   @Test
   public void testCorrectness() {
-    Word2VecModel model = new Word2VecModel("data/embeddings.sqlite3",
-        "data/stopwords.txt");
+    Word2VecModel model = Word2VecModel.model;
 
     // Number might need updating after db is fixed.
     assertEquals(model.vocabulary().size(), 714265);
@@ -103,7 +103,51 @@ public class Word2VecModelTest {
     first = model.vectorOf("yes");
     second = model.vectorOf("no");
     assertEquals(first.similarity(second), 0.392106, 0.0001);
+  }
 
-    model.close();
+  @Test
+  public void tokenizeStopWordsTest() {
+    Word2VecModel model = Word2VecModel.model;
+
+    assertEquals(model.tokenize("the"), Collections.emptyList());
+    assertEquals(model.tokenize("the a and"), Collections.emptyList());
+    assertEquals(model.tokenize("the big cat"), model.tokenize("big cat"));
+    assertEquals(model.tokenize("ThE BAG cAT"), model.tokenize("bag cat"));
+    assertEquals(model.tokenize("across the large place"),
+        model.tokenize("across large place"));
+  }
+
+  @Test
+  public void tokenizeWhitespaceAndPunctuationTest() {
+    Word2VecModel model = Word2VecModel.model;
+
+    assertEquals(model.tokenize("red?"),
+        ImmutableList.of(model.vectorOf("red?")));
+    assertEquals(
+        model.tokenize(
+            "my biggest \t\t\npet\npeeve\t\tis\tredundant\t\nwhitespace!"),
+        model.tokenize("my biggest pet peeve is redundant whitespace!"));
+
+    // Checks that this doesn't crash anything.
+    model.tokenize("ß∂ƒ©˙ ∆µ∆˙©ƒ∆®¥†˙µ ˜©∫ƒ∂ßƒ∂© ˙∆≤˚ ˙©ƒ∂© ƒç©√˜∫");
+
+    assertEquals(model.tokenize("punc. tuation"),
+        ImmutableList.of(model.vectorOf("punc."), model.vectorOf("tuation")));
+    assertEquals(model.tokenize("regular input"),
+        ImmutableList.of(model.vectorOf("regular"), model.vectorOf("input")));
+  }
+
+  @Test
+  public void stopwordInclusionExclusionTest() {
+    assertTrue(Word2VecModel.model.getStopwords()
+        .containsAll(ImmutableSet.of("and", "for", "the", "a", "from")));
+    assertFalse(Word2VecModel.model.getStopwords().containsAll(ImmutableSet.of(
+        "want", "big", "small", "old", "work", "ate", "new", "year", "good")));
+  }
+
+  @Test
+  public void emptyTokenizeTest() {
+    assertTrue(Word2VecModel.model.tokenize("").isEmpty());
+    assertTrue(Word2VecModel.model.tokenize("the").isEmpty());
   }
 }

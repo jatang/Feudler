@@ -45,4 +45,10 @@ public class Guess implements Cluster {
     // TODO Auto-generated method stub
     return 0;
   }
+
+  @Override
+  public List<WordVector> getVectors() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

@@ -128,6 +128,7 @@ public class WordVector {
     if (!(obj instanceof WordVector)) {
       return false;
     }
+    // Keeps it simple, only checks the original word.
     return word.equals(((WordVector) obj).getWord());
   }
 

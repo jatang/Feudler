@@ -20,7 +20,6 @@ public class WordVectorTest {
 
   @Test
   public void testMalformedVector() {
-
     try {
       new WordVector("", "a,b,c");
       fail("Invalid vector values.");

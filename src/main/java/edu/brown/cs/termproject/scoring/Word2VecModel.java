@@ -154,10 +154,19 @@ public class Word2VecModel implements AutoCloseable {
     String[] parts = lower.split("\\s+");
     List<WordVector> nonStopwordEmbeddings = new ArrayList<>();
     for (String part : parts) {
-      if (!stopwords.contains(part)) {
+      if (!stopwords.contains(part) && !part.isEmpty()) {
         nonStopwordEmbeddings.add(vectorOf(part));
       }
     }
     return ImmutableList.copyOf(nonStopwordEmbeddings);
+  }
+
+  /**
+   * Gets the stopwords of the model.
+   * 
+   * @return an immutable set of words
+   */
+  public ImmutableSet<String> getStopwords() {
+    return stopwords;
   }
 }

@@ -28,7 +28,7 @@ let $sliderRounds;
 let $nextRound;
 let $submit;
 // Display elements
-let $score
+let $score;
 let $timer;
 
 let $guess;
@@ -80,7 +80,7 @@ $(document).ready(() => {
         if ($modeMeta[0].checked) {
             $categoryCustom.checkboxradio("disable");
         }
-    })
+    });
     $modeStandard.change(() => {
         if ($modeStandard[0].checked) {
             $categoryCustom.checkboxradio("enable");
@@ -266,27 +266,29 @@ class Connection {
             console.log('Error Logged: ' + error); //log errors
         };
         this.connection.onmessage = function (message) {
+            console.log(message);
+            console.log(JSON.parse(message));
             switch (message.type) {
                 case CONNECT:
                     console.log("websocket connected");
                     break;
                 case CREATE_ROOM:
-                    this.receiveCreateMessage(message);
+                    this.receiveCreateMessage(message.payload);
                     break;
                 case USER_JOIN:
-                    this.receiveJoinMessage(message);
+                    this.receiveJoinMessage(message.payload);
                     break;
                 case NEW_ROUND:
-                    this.receiveNewRoundMessage(message);
+                    this.receiveNewRoundMessage(message.payload);
                     break;
                 case PLAYER_GUESS:
                     //TODO: Make sure answer is correct AND hasn't been guessed yet
-                    this.receiveGuessMessage(message);
+                    this.receiveGuessMessage(message.payload);
                     break;
                 default:
                     console.log("Unknown message type received: " + message.type);
             }
-        }
+        };
         // TODO: Remove when server side works
         this.answers = new Map([
             ["subway", new Box(0, "subway", 100000)],
@@ -303,11 +305,13 @@ class Connection {
     }
 
     sendCreateMessage() {
-        const message = new Object();
-        // message.type = CREATE_ROOM;
-        // this.connection.send(JSON.stringify(message));
-        message.roomId = 3;
-        this.receiveCreateMessage(message)
+        const message = {
+            type: CREATE_ROOM,
+            payload: {}
+        };
+        this.connection.send(JSON.stringify(message));
+        // message.roomId = 3;
+        // this.receiveCreateMessage(message)
     }
 
     receiveCreateMessage(message) {
@@ -317,13 +321,16 @@ class Connection {
     }
 
     sendJoinMessage() {
-        const message = new Object();
-        // message.type = USER_JOIN;
-        // message.roomId = this.id;
-        // message.username = this.username;
-        // this.connection.send(JSON.stringify(message));
-        message.userId = 5;
-        this.receiveJoinMessage(message);
+        const message = {
+            type: USER_JOIN,
+            payload: {
+                roomId: this.id,
+                username: this.username
+            }
+        };
+        this.connection.send(JSON.stringify(message));
+        // message.userId = 5;
+        // this.receiveJoinMessage(message);
     }
 
     receiveJoinMessage(message) {
@@ -331,29 +338,35 @@ class Connection {
     }
 
     sendNewGameMessage() {
-        // const message = new Object();
-        // message.type = NEW_GAME;
-        // message.roomId = this.id;
-        // const settings = new Object();
-        // settings.type = game.multiplayer ? "multiplayer" : "singleplayer";
-        // settings.mode = $modeMeta[0].checked ? "meta" : "standard"
-        // settings.rounds = game.roundsRemaining;
-        // message.settings = JSON.stringify(settings);
-        // this.connection.send(JSON.stringify(message));
+        const message = {
+            type: NEW_GAME,
+            payload: {
+                roomId: game.id,
+                settings: {
+                    type: game.multiplayer ? "multiplayer" : "singleplayer",
+                    mode: $modeMeta[0].checked ? "meta" : "standard",
+                    rounds: game.roundsRemaining
+                }
+            }
+        };
+        this.connection.send(JSON.stringify(message));
     }
 
     sendNewRoundMessage() {
-        const message = new Object();
-        // message.type = NEW_ROUND;
-        // message.roomId = game.id;
-        // this.connection.send(JSON.stringify(message));
-        message.query = "What does the fox";
-        message.numResponses = 9;
-        // TODO: Remove when necessary
-        this.answers.forEach((val, key, map) => {
-            val.guessed = false;
-        })
-        this.receiveNewRoundMessage(message);
+        const message = {
+            type: NEW_ROUND,
+            payload: {
+                roomId: game.id
+            }
+        };
+        this.connection.send(JSON.stringify(message));
+        // message.query = "What does the fox";
+        // message.numResponses = 9;
+        // // TODO: Remove when necessary
+        // this.answers.forEach((val, key, map) => {
+        //     val.guessed = false;
+        // })
+        // this.receiveNewRoundMessage(message);
     }
 
     receiveNewRoundMessage(message) {
@@ -361,19 +374,22 @@ class Connection {
     }
 
     sendGuessMessage(query) {
-        const message = new Object();
-        // message.type = PLAYER_GUESS;
-        // message.roomId = game.id;
-        // message.guess = query;
-        // this.connection.send(JSON.stringify(message));
-        if (this.answers.has(query)) {
-            const answer = this.answers.get(query);
-            answer.guessed = true;
-            message.suggestion = answer.answer;
-            message.suggestionIndex = answer.index;
-            message.score = answer.score;
-            this.receiveGuessMessage(message);
-        }
+        const message = {
+            type: PLAYER_GUESS,
+            payload: {
+                roomId: game.id,
+                guess: query
+            }
+        };
+        this.connection.send(JSON.stringify(message));
+        // if (this.answers.has(query)) {
+        //     const answer = this.answers.get(query);
+        //     answer.guessed = true;
+        //     message.suggestion = answer.answer;
+        //     message.suggestionIndex = answer.index;
+        //     message.score = answer.score;
+        //     this.receiveGuessMessage(message);
+        // }
     }
 
     receiveGuessMessage(message) {
@@ -381,17 +397,16 @@ class Connection {
     }
 
     sendGetRemainingMessage() {
-        const message = new Object();
+        const message = {};
         // TODO: actually implement for Websockets
-        const rem = new Array();
-        console.log(this.answers.values());
-        for (const box of this.answers.values()) {
-            if (!box.guessed) {
-                rem.push(box);
-            }
-        }
-        message.remaining = rem;
-        this.receiveGetRemainingMessage(message);
+        // const rem = new Array();
+        // for (const box of this.answers.values()) {
+        //     if (!box.guessed) {
+        //         rem.push(box);
+        //     }
+        // }
+        // message.remaining = rem;
+        // this.receiveGetRemainingMessage(message);
     }
 
     receiveGetRemainingMessage(message) {
@@ -399,7 +414,6 @@ class Connection {
             reveal(value.answer, value.index, value.score, true);
         });
     }
-
 }
 
 class Box {

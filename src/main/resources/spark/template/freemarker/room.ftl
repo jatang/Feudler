@@ -55,32 +55,32 @@
             <input type="radio" name="player-type" id="player-type-multi">
         </fieldset>
 
-        <h5>Game Mode</h5>
-        <fieldset>
-            <label for="mode-standard">Standard</label>
-            <input type="radio" name="mode" id="mode-standard" checked="checked">
+        <#--<h5>Game Mode</h5>-->
+        <#--<fieldset>-->
+            <#--<label for="mode-standard">Standard</label>-->
+            <#--<input type="radio" name="mode" id="mode-standard" checked="checked">-->
 
-            <label for="mode-meta">Meta</label>
-            <input type="radio" name="mode" id="mode-meta">
-        </fieldset>
+            <#--<label for="mode-meta">Meta</label>-->
+            <#--<input type="radio" name="mode" id="mode-meta">-->
+        <#--</fieldset>-->
 
         <h5># of Rounds</h5>
         <div id="slider-rounds" class="slider">
             <div id="handle-rounds" class="ui-slider-handle handle small-margin-bottom"></div>
         </div>
 
-        <h5>Category</h5>
-        <fieldset>
-            <!-- TODO: Foods, Drinks, Actors, Animals -->
-            <label for="category-any">Anything!</label>
-            <input type="radio" name="category" id="category-any" checked="checked">
+        <#--<h5>Category</h5>-->
+        <#--<fieldset>-->
+            <#--<!-- TODO: Foods, Drinks, Actors, Animals &ndash;&gt;-->
+            <#--<label for="category-any">Anything!</label>-->
+            <#--<input type="radio" name="category" id="category-any" checked="checked">-->
 
-            <label for="category-science">Science</label>
-            <input type="radio" name="category" id="category-science">
+            <#--<label for="category-science">Science</label>-->
+            <#--<input type="radio" name="category" id="category-science">-->
 
-            <label for="category-custom">Custom</label>
-            <input type="radio" name="category" id="category-custom">
-        </fieldset>
+            <#--<label for="category-custom">Custom</label>-->
+            <#--<input type="radio" name="category" id="category-custom">-->
+        <#--</fieldset>-->
         <hr>
         <input type="button" value="Configure Game" id=configure-game class=small-margin-bottom></input>
     </div>
@@ -147,6 +147,8 @@
             <span class="ui-icon ui-icon-alert" style="float:left; margin: 0 2px 0 2px;"></span>
         </p>
     </div>
+
+
 </div>
 </body>
 </html>

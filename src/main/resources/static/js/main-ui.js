@@ -117,16 +117,16 @@ $(document).ready(() => {
 // settings box if necessary
     const $configButton = $("#configure-game");
     $configButton.click(() => {
-        if ($categoryCustom[0].checked) {
-            $settings.hide("drop", {direction: "left"}, () => {
-                $custom.show("drop", {direction: "right"});
-            });
-        } else {
+        // if ($categoryCustom[0].checked) {
+        //     $settings.hide("drop", {direction: "left"}, () => {
+        //         $custom.show("drop", {direction: "right"});
+        //     });
+        // } else {
             startGame();
             $settings.hide("fade", () => {
                 $playSingle.show("fade");
             });
-        }
+        // }
     });
 
 // Sets up back button in custom query box
@@ -245,7 +245,6 @@ function formatSeconds(timeInSeconds) {
 
 function addPoints(toAdd) {
     game.score += Number(toAdd);
-    console.log("score: " + game.score);
     $score.text(game.score);
 }
 
@@ -355,7 +354,7 @@ class Connection {
                 roomId: game.id,
                 settings: {
                     type: game.multiplayer ? "multiplayer" : "singleplayer",
-                    mode: $modeMeta[0].checked ? "meta" : "standard",
+                    // mode: $modeMeta[0].checked ? "meta" : "standard",
                     rounds: game.roundsRemaining
                 }
             }

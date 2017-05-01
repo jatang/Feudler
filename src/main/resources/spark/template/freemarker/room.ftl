@@ -142,12 +142,29 @@
     </div>
 
     <!-- Dialog boxes -->
+    <#--Cannot add another custom query-->
     <div id="alert-too-many-queries" class="dialog-message" title="Cannot add query">
         <p class=nothing-around>
             <span class="ui-icon ui-icon-alert" style="float:left; margin: 0 2px 0 2px;"></span>
         </p>
     </div>
 
+    <#--Join multiplayer game-->
+    <div id="dialog-form" title="Join multiplayer game">
+        <p class="validateTips">Username must be under 10 characters.</p>
+
+        <form>
+            <fieldset>
+                <label for="name">Username</label>
+                <input type="text" name="name" id="name" class="text ui-widget-content ui-corner-all">
+                <label for="room">Room number</label>
+                <input type="text" name="room" id="room" class="text ui-widget-content ui-corner-all">
+
+                <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+            </fieldset>
+        </form>
+    </div>
 
 </div>
 </body>

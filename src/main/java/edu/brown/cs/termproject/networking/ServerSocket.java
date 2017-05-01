@@ -49,7 +49,8 @@ public class ServerSocket {
   }
 
   private static enum MESSAGE_TYPE {
-    CONNECT, CREATE_ROOM, CUSTOM_QUERY, NEW_GAME, NEW_ROUND, ROUND_END, USER_JOIN,
+    CONNECT, CREATE_ROOM, CUSTOM_QUERY, NEW_GAME, NEW_ROUND, ROUND_END,
+    USER_JOIN,
     USER_LEFT, PLAYER_GUESS, USER_CHAT
   }
 
@@ -61,7 +62,7 @@ public class ServerSocket {
 
     connMessage.addProperty("type", MESSAGE_TYPE.CONNECT.ordinal());
     connMessage.addProperty("payload", new JsonObject().toString());
-    
+
     session.getRemote().sendString(connMessage.toString());
   }
 
@@ -142,9 +143,9 @@ public class ServerSocket {
           }
 
           if (session.equals(room.getCreator())) {
-        	  JsonObject settings = payload.get("settings").getAsJsonObject();
+            JsonObject settings = payload.get("settings").getAsJsonObject();
             room.newGame(settings.get("rounds").getAsInt());
-            
+
             updateMessage = new JsonObject();
             updatePayload = new JsonObject();
 
@@ -165,7 +166,7 @@ public class ServerSocket {
           // Check whether user requesting new round is owner. If so, start
           // round
           // game in room otherwise do nothing.
-        	
+
           room = ROOMS.get(payload.get("roomId").getAsString());
           if (room == null) {
             return;
@@ -173,16 +174,62 @@ public class ServerSocket {
 
           if (session.equals(room.getCreator())) {
             QueryResponses roundQuery = room.getGame().newRound();
-            if (roundQuery != null) {
-              updateMessage = new JsonObject();
-              updatePayload = new JsonObject();
 
+            updateMessage = new JsonObject();
+            updatePayload = new JsonObject();
+
+            if (roundQuery != null) {
               updatePayload.addProperty("query", roundQuery.getQuery());
               updatePayload.addProperty("numResponses",
                   roundQuery.getResponses().size());
+            } else {
+              updatePayload.addProperty("query", "");
+              updatePayload.addProperty("numResponses", 0);
+            }
+
+            updateMessage.addProperty("type",
+                MESSAGE_TYPE.NEW_ROUND.ordinal());
+            updateMessage.addProperty("payload", updatePayload.toString());
+            updateMessageString = updateMessage.toString();
+
+            // Send back response (round query) on NEW_ROUND.
+            for (Session sess : room.getUserSessions()) {
+              sess.getRemote().sendString(updateMessageString);
+            }
+          }
+          break;
+        case ROUND_END:
+          // Payload contains room link/id
+
+          // Check whether user requesting new round is owner. If so, end
+          // current round in room. Otherwise do nothing.
+
+          room = ROOMS.get(payload.get("roomId").getAsString());
+          if (room == null) {
+            return;
+          }
+
+          if (session.equals(room.getCreator())) {
+            QueryResponses roundQuery = room.getGame().endRound();
+            if (roundQuery != null) {
+              updateMessage = new JsonObject();
+              updatePayload = new JsonObject();
+              JsonArray suggestions = new JsonArray();
+
+              for (Suggestion sugg : roundQuery.getResponses().asList()) {
+                JsonObject suggestionData = new JsonObject();
+                suggestionData.addProperty("suggestion", sugg.getResponse());
+                suggestionData.addProperty("suggestionIndex", sugg.getScore());
+                suggestionData.addProperty("score",
+                    (10 - sugg.getScore()) * 1000);
+
+                suggestions.add(suggestionData);
+              }
+
+              updatePayload.addProperty("suggestions", suggestions.toString());
 
               updateMessage.addProperty("type",
-                  MESSAGE_TYPE.NEW_ROUND.ordinal());
+                  MESSAGE_TYPE.ROUND_END.ordinal());
               updateMessage.addProperty("payload", updatePayload.toString());
               updateMessageString = updateMessage.toString();
 
@@ -193,115 +240,79 @@ public class ServerSocket {
             }
           }
           break;
-        case ROUND_END:
-        	// Payload contains room link/id
-
-            // Check whether user requesting new round is owner. If so, end
-            // current round in room. Otherwise do nothing.
-          	
-            room = ROOMS.get(payload.get("roomId").getAsString());
-            if (room == null) {
-              return;
-            }
-
-            if (session.equals(room.getCreator())) {
-              QueryResponses roundQuery = room.getGame().endRound();
-              if (roundQuery != null) {
-                updateMessage = new JsonObject();
-                updatePayload = new JsonObject();
-                JsonArray suggestions = new JsonArray();
-                
-                for(Suggestion sugg : roundQuery.getResponses().asList()) {
-                	JsonObject suggestionData = new JsonObject();
-                	suggestionData.addProperty("suggestion", sugg.getResponse());
-                	suggestionData.addProperty("suggestionIndex", sugg.getScore());
-                	suggestionData.addProperty("score", (10 - sugg.getScore()) * 1000);
-                	
-                	suggestions.add(suggestionData);
-                }
-
-                updatePayload.addProperty("suggestions", suggestions.toString());
-
-                updateMessage.addProperty("type",
-                    MESSAGE_TYPE.ROUND_END.ordinal());
-                updateMessage.addProperty("payload", updatePayload.toString());
-                updateMessageString = updateMessage.toString();
-
-                // Send back response (round query) on NEW_ROUND.
-                for (Session sess : room.getUserSessions()) {
-                  sess.getRemote().sendString(updateMessageString);
-                }
-              }
-            }
-        	break;
         case USER_JOIN:
           // Payload contains room link/id, user username
 
           // Check whether room id is valid and is accepting users. If so, add
           // user to room.
-        	
+
           room = ROOMS.get(payload.get("roomId").getAsString());
           if (room != null) {
 
-	          User addedUser =
-	              room.addUser(session, payload.get("username").getAsString());
-	          
-	          if (addedUser != null) {
-	        	int score;
-	            updateMessage = new JsonObject();
-	            updatePayload = new JsonObject();
-	
-	            updatePayload.addProperty("userId", addedUser.getId());
-	            updatePayload.addProperty("username", addedUser.getUsername());
-	            score = room.getGame() == null ? 0 : room.getGame().getPlayerScore(addedUser);
-	            updatePayload.addProperty("score", score);
-	
-	            updateMessage.addProperty("type", MESSAGE_TYPE.USER_JOIN.ordinal());
-	            updateMessage.addProperty("payload", updatePayload.toString());
-	            updateMessageString = updateMessage.toString();
-	
-	            // Send back response (user id, username) on USER_JOIN
-	            for (Session sess : room.getUserSessions()) {
-	            	if(!sess.equals(session)) {
-	            		sess.getRemote().sendString(updateMessageString);
-	            	}
-	            }
-	            
-	            JsonArray users = new JsonArray();
-	            for(User user : room.getUsers()) {
-	            	if(!user.equals(addedUser)) {
-		            	JsonObject userData = new JsonObject();
-		            	userData.addProperty("userId", user.getId());
-		            	userData.addProperty("username", user.getUsername());
-		            	score = room.getGame() == null ? 0 : room.getGame().getPlayerScore(user);
-		 	            updatePayload.addProperty("score", score);
-		            	
-		            	users.add(userData);
-	            	}
-	            }
-	            
-	            JsonArray guessed = new JsonArray();
-	            if(room.getGame() != null) {
-		            for(Suggestion sugg : room.getGame().getGuessedSuggestions()) {
-		            	JsonObject suggestionData = new JsonObject();
-		            	suggestionData.addProperty("suggestion", sugg.getResponse());
-		            	suggestionData.addProperty("suggestionIndex", sugg.getScore());
-		            	suggestionData.addProperty("score", (10 - sugg.getScore()) * 1000);
-		            	
-		            	guessed.add(suggestionData);
-		            }
-	            }
-	            
-	            updatePayload.addProperty("users", users.toString());
-	            updatePayload.addProperty("guessed", guessed.toString());
-	            
-	            updateMessage.addProperty("payload", updatePayload.toString());
-	            
-	            session.getRemote().sendString(updateMessage.toString());
-	            return;
-	          }
+            User addedUser =
+                room.addUser(session, payload.get("username").getAsString());
+
+            if (addedUser != null) {
+              int score;
+              updateMessage = new JsonObject();
+              updatePayload = new JsonObject();
+
+              updatePayload.addProperty("userId", addedUser.getId());
+              updatePayload.addProperty("username", addedUser.getUsername());
+              score = room.getGame() == null ? 0
+                  : room.getGame().getPlayerScore(addedUser);
+              updatePayload.addProperty("score", score);
+
+              updateMessage.addProperty("type",
+                  MESSAGE_TYPE.USER_JOIN.ordinal());
+              updateMessage.addProperty("payload", updatePayload.toString());
+              updateMessageString = updateMessage.toString();
+
+              // Send back response (user id, username) on USER_JOIN
+              for (Session sess : room.getUserSessions()) {
+                if (!sess.equals(session)) {
+                  sess.getRemote().sendString(updateMessageString);
+                }
+              }
+
+              JsonArray users = new JsonArray();
+              for (User user : room.getUsers()) {
+                if (!user.equals(addedUser)) {
+                  JsonObject userData = new JsonObject();
+                  userData.addProperty("userId", user.getId());
+                  userData.addProperty("username", user.getUsername());
+                  score = room.getGame() == null ? 0
+                      : room.getGame().getPlayerScore(user);
+                  updatePayload.addProperty("score", score);
+
+                  users.add(userData);
+                }
+              }
+
+              JsonArray guessed = new JsonArray();
+              if (room.getGame() != null) {
+                for (Suggestion sugg : room.getGame().getGuessedSuggestions()) {
+                  JsonObject suggestionData = new JsonObject();
+                  suggestionData.addProperty("suggestion", sugg.getResponse());
+                  suggestionData.addProperty("suggestionIndex",
+                      sugg.getScore());
+                  suggestionData.addProperty("score",
+                      (10 - sugg.getScore()) * 1000);
+
+                  guessed.add(suggestionData);
+                }
+              }
+
+              updatePayload.addProperty("users", users.toString());
+              updatePayload.addProperty("guessed", guessed.toString());
+
+              updateMessage.addProperty("payload", updatePayload.toString());
+
+              session.getRemote().sendString(updateMessage.toString());
+              return;
+            }
           }
-          
+
           updateMessage = new JsonObject();
           updatePayload = new JsonObject();
 
@@ -311,7 +322,7 @@ public class ServerSocket {
 
           updateMessage.addProperty("type", MESSAGE_TYPE.USER_JOIN.ordinal());
           updateMessage.addProperty("payload", updatePayload.toString());
-            
+
           session.getRemote().sendString(updateMessage.toString());
 
           break;
@@ -408,7 +419,7 @@ public class ServerSocket {
       }
 
     } catch (Exception e) {
-    	e.printStackTrace();
+      e.printStackTrace();
       System.out.println("ERROR: Unexpected message: " + received.toString());
     }
   }

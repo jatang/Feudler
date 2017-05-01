@@ -34,6 +34,8 @@ let $timer;
 
 let $guess;
 
+let $dialog;
+
 let connection;
 
 $(document).ready(() => {
@@ -53,6 +55,8 @@ $(document).ready(() => {
 
     $submit = $("#submit");
     $submit.click(() => game.round.checkAnswer());
+
+
 
 // Sets up buttons.
     $("input[type='radio']").checkboxradio({
@@ -122,10 +126,7 @@ $(document).ready(() => {
         //         $custom.show("drop", {direction: "right"});
         //     });
         // } else {
-            startGame();
-            $settings.hide("fade", () => {
-                $playSingle.show("fade");
-            });
+        startGame();
         // }
     });
 
@@ -182,7 +183,65 @@ $(document).ready(() => {
             }
         }
     }).dialog("close");
+
+    $dialog = $( "#dialog-form" ).dialog({
+        autoOpen: false,
+        height: 400,
+        width: 350,
+        modal: true,
+        buttons: {
+            "Join": validateJoin,
+            Cancel: function() {
+                $dialog.dialog( "close" );
+            }
+        },
+        close: function() {
+            form[ 0 ].reset();
+            $("#name").removeClass( "ui-state-error" );
+            $("#room").removeClass( "ui-state-error" );
+        }
+    });
+
+    form = $dialog.find( "form" ).on( "submit", function( event ) {
+        event.preventDefault();
+        validateJoin();
+    });
+
+    $( "#join-game" ).on( "click", function() {
+        $dialog.dialog( "open" );
+    });
 });
+
+function validateJoin() {
+    let valid = true;
+    const $name = $("#name").removeClass( "ui-state-error" );
+    const $room = $("#room").removeClass( "ui-state-error" );
+    valid = valid && checkLength( $name, "username", 1, 10 );
+    valid = valid && checkLength( $room, "room number", 6, 6 );
+    if (valid) {
+        joinGame($room.val(), $name.val());
+    }
+}
+
+function checkLength( o, n, min, max ) {
+    if ( o.val().length > max || o.val().length < min ) {
+        o.addClass( "ui-state-error" );
+        updateTips( "Length of " + n + " must be between " +
+            min + " and " + max + "." );
+        return false;
+    } else {
+        return true;
+    }
+}
+
+function updateTips( t ) {
+    $(".validateTips")
+        .text(t)
+        .addClass("ui-state-highlight");
+    setTimeout(function() {
+        $(".validateTips").removeClass( "ui-state-highlight", 1500 );
+    }, 500 );
+}
 
 function reveal(answer, index, score, flagMissed) {
     const revealedContent = "<div class='std-text'><div style='float: left; font-weight: 700;'>"
@@ -237,6 +296,11 @@ function startGame() {
     game.configure();
 }
 
+function joinGame(roomId, username) {
+    game = new Game(false, true, null, roomId, username)
+    game.configure();
+}
+
 function formatSeconds(timeInSeconds) {
     const minutes = Math.floor((timeInSeconds / (60)));
     const seconds = Math.floor((timeInSeconds % (60)));
@@ -271,7 +335,7 @@ class Connection {
         this.connection.onmessage = function (messageEvent) {
             const message = JSON.parse(messageEvent.data);
             const payload = JSON.parse(message.payload);
-            // console.log(message);
+            console.log(message);
             switch (message.type) {
                 case CONNECT:
                     console.log("websocket connected");
@@ -331,6 +395,7 @@ class Connection {
     }
 
     sendJoinMessage() {
+        console.log("sending join begin");
         const message = {
             type: USER_JOIN,
             payload: {
@@ -339,12 +404,28 @@ class Connection {
             }
         };
         this.connection.send(JSON.stringify(message));
+        console.log("sent");
         // message.userId = 5;
         // this.receiveJoinMessage(message);
     }
 
     receiveJoinMessage(payload) {
+        console.log("payload: " + payload);
+        if (payload.userId === "") {
+            $("#room").addClass( "ui-state-error" );
+            updateTips("No room exists with that ID.");
+            return;
+        }
         game.userId = payload.userId;
+        if (game.hosting) {
+            $settings.hide("fade", () => {
+                $playSingle.show("fade");
+            });
+        } else {
+            $home.hide("fade", () => {
+                $playSingle.show("fade");
+            });
+        }
     }
 
     sendNewGameMessage() {
@@ -462,6 +543,7 @@ class Game {
     }
 
     configure() {
+        console.log("configuring w/ id=" + this.id);
         const message = (this.id === "") ? connection.sendCreateMessage() : connection.sendJoinMessage();
     }
 

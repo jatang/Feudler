@@ -8,6 +8,7 @@ const USER_JOIN = 6;
 const USER_LEFT = 7;
 const PLAYER_GUESS = 8;
 const USER_CHAT = 9;
+const UPDATE_TIME = 10;
 
 const MAX_ROUNDS = 5;
 let game;
@@ -319,6 +320,9 @@ class Countdown {
 
     tick() {
         this.initial--;
+        if (game.multiplayer && game.hosting) {
+            connection.sendUpdateTime(this.initial);
+        }
         return this.initial;
     }
 }
@@ -335,7 +339,7 @@ class Connection {
         this.connection.onmessage = function (messageEvent) {
             const message = JSON.parse(messageEvent.data);
             const payload = JSON.parse(message.payload);
-            console.log(message);
+            // console.log(message);
             switch (message.type) {
                 case CONNECT:
                     console.log("websocket connected");
@@ -395,7 +399,6 @@ class Connection {
     }
 
     sendJoinMessage() {
-        console.log("sending join begin");
         const message = {
             type: USER_JOIN,
             payload: {
@@ -404,13 +407,11 @@ class Connection {
             }
         };
         this.connection.send(JSON.stringify(message));
-        console.log("sent");
         // message.userId = 5;
         // this.receiveJoinMessage(message);
     }
 
     receiveJoinMessage(payload) {
-        console.log("payload: " + payload);
         if (payload.userId === "") {
             $("#room").addClass( "ui-state-error" );
             updateTips("No room exists with that ID.");
@@ -461,7 +462,12 @@ class Connection {
     }
 
     receiveNewRoundMessage(payload) {
-    	$guess.val("");
+        console.log(payload);
+        if (payload.query === "") {
+            console.log("ERROR: no rounds remaining");
+            window.location.replace("/");
+        }
+        $guess.val("");
         game.nextRound(payload.query, payload.numResponses, 30);
     }
 
@@ -516,6 +522,17 @@ class Connection {
                 reveal(elt.suggestion, elt.suggestionIndex, elt.score, true);
         });
     }
+
+    sendUpdateTime(timeSeconds) {
+        const message = {
+            type: UPDATE_TIME,
+            payload: {
+                timeSeconds: timeSeconds
+            }
+        };
+        this.connection.send(JSON.stringify(message));
+        console.log("updating time");
+    }
 }
 
 class Box {
@@ -543,22 +560,16 @@ class Game {
     }
 
     configure() {
-        console.log("configuring w/ id=" + this.id);
         const message = (this.id === "") ? connection.sendCreateMessage() : connection.sendJoinMessage();
     }
 
     nextRound(query, size, duration) {
-        if (this.roundsRemaining > 0) {
-            $nextRound.hide("fade", () => {
-                $submit.show("fade");
-            });
-            this.round = new Round(query, size, duration, this.hosting);
-            this.roundsRemaining--;
-            this.round.start();
-        } else {
-            console.log("ERROR: no rounds remaining");
-            window.location.replace("/");
-        }
+        $nextRound.hide("fade", () => {
+            $submit.show("fade");
+        });
+        this.round = new Round(query, size, duration, this.hosting);
+        this.roundsRemaining--;
+        this.round.start();
     }
 }
 

@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -29,8 +30,7 @@ import edu.brown.cs.termproject.scoring.Word2VecModel;
 public class Suggestions {
 
   private static final Gson GSON = new Gson();
-  private static final String GOOGLE_SUGGESTIONS =
-      "http://suggestqueries.google.com/complete/search";
+  private static final String GOOGLE_SUGGESTIONS = "http://suggestqueries.google.com/complete/search";
 
   /**
    * A getter for suggestions from Google.
@@ -118,9 +118,13 @@ public class Suggestions {
     List<String> suggestions = getUniqueGoogleSuggestions(query);
 
     int i = query.lastIndexOf(' ');
-    suggestions.forEach((s) -> s.substring(i + 1, s.length()));
+    List<String> endings = suggestions.stream()
+        .map((s) -> s.substring(i + 1, s.length()))
+        .collect(Collectors.toList());
 
-    return Clustering.newSuggestionClustering(suggestions, Word2VecModel.model);
+    Clustering<Suggestion> clustering = Clustering
+        .newSuggestionClustering(endings, Word2VecModel.model);
+    return clustering;
   }
 
 }

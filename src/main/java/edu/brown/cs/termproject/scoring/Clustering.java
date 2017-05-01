@@ -18,7 +18,7 @@ import org.apache.commons.lang3.tuple.Pair;
  * an EmbeddingCluster factory, do new Clustering[EmbeddingCluster](list,
  * factory) and that will create a clustering of Embedding clusters. Then to
  * check if a word is in a cluster, call .clusterOf(word) and it will return
- * Optiona.of(cluster) if it's in a cluster, and absent otherwise.
+ * Optional.of(cluster) if it's in a cluster, and absent otherwise.
  *
  * @author asekula
  *
@@ -68,22 +68,6 @@ public class Clustering<T extends Cluster> {
         .collect(Collectors.toList());
     return new Clustering<Suggestion>(suggestions, model,
         new SuggestionFactory());
-  }
-
-  /**
-   * Factory pattern for making a guess clustering. Assumes that most of the
-   * time, the guesses will already be in clusters, and that we're trying to add
-   * to them or make some new ones.
-   * 
-   * @param clusters
-   *          the pre-existing clusters, an empty list if none exist
-   * @param model
-   *          the word2vec model
-   * @return a clustering representing all the guesses for some query
-   */
-  public static Clustering<Guess> newGuessClustering(List<Guess> clusters,
-      Word2VecModel model) {
-    return new Clustering<Guess>(clusters, model, new GuessFactory());
   }
 
   /**

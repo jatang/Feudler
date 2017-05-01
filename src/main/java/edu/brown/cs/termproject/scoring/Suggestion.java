@@ -32,6 +32,18 @@ public class Suggestion implements Cluster {
     this.score = score;
   }
 
+  /**
+   * A simple method that allows checking similarity of other suggestions. Calls
+   * similarity on the suggestion's WordVectors.
+   *
+   * @param other
+   *          the other suggestion
+   * @return a double representing how similar the suggestion is to this
+   */
+  public double similarity(Suggestion other) {
+    return similarity(other.getVectors());
+  }
+
   @Override
   public double similarity(List<WordVector> otherSuggestion) {
     // Dividing by 2 is redundant but it keeps the scaling correct (max possible

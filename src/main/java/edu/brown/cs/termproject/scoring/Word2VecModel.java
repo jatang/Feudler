@@ -29,7 +29,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class Word2VecModel implements AutoCloseable {
 
-  public static final Word2VecModel model = new Word2VecModel("", "");
+  public static final Word2VecModel model = new Word2VecModel(
+      "data/embeddings.sqlite3", "data/stopwords.txt");
 
   // vocabulary reference never changes, so concurrent calls to vocabulary()
   // will not be a problem.

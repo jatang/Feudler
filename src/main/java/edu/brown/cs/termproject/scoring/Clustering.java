@@ -114,9 +114,9 @@ public class Clustering<T extends Cluster> {
       Word2VecModel model) {
     total = 0;
     this.clusters = new ArrayList<>();
-    answers.forEach(this::add);
     this.model = model;
     this.factory = factory;
+    answers.forEach(this::add);
   }
 
   /**

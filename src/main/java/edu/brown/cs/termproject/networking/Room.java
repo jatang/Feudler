@@ -80,7 +80,7 @@ public class Room {
   /**
    * Creates a new Game for the Room.
    */
-  public void newGame(int rounds/* Settings */) {
+  public void newGame(int rounds /* Settings */) {
     if (game != null) {
       game.endGame();
     }

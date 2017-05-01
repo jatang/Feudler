@@ -208,9 +208,9 @@ public class ServerSocket {
                 
                 for(Suggestion sugg : roundQuery.getResponses().asList()) {
                 	JsonObject suggestionData = new JsonObject();
-                	updatePayload.addProperty("suggestion", sugg.getResponse());
-                    updatePayload.addProperty("suggestionIndex", sugg.getScore() - 1);
-                    updatePayload.addProperty("score", (11 - sugg.getScore()) * 1000);
+                	suggestionData.addProperty("suggestion", sugg.getResponse());
+                	suggestionData.addProperty("suggestionIndex", sugg.getScore() - 1);
+                	suggestionData.addProperty("score", (11 - sugg.getScore()) * 1000);
                 	
                 	suggestions.add(suggestionData);
                 }

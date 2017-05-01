@@ -89,6 +89,7 @@ public class ServerSocket {
 
     JsonObject updateMessage;
     JsonObject updatePayload;
+    String updateMessageString;
     Room room;
 
     try {
@@ -149,10 +150,11 @@ public class ServerSocket {
 
             updateMessage.addProperty("type", MESSAGE_TYPE.NEW_GAME.ordinal());
             updateMessage.addProperty("payload", updatePayload.toString());
+            updateMessageString = updateMessage.toString();
 
             // Send back response on NEW_GAME.
             for (Session sess : room.getUserSessions()) {
-              sess.getRemote().sendString(updateMessage.toString());
+              sess.getRemote().sendString(updateMessageString);
             }
           }
 
@@ -182,10 +184,11 @@ public class ServerSocket {
               updateMessage.addProperty("type",
                   MESSAGE_TYPE.NEW_ROUND.ordinal());
               updateMessage.addProperty("payload", updatePayload.toString());
+              updateMessageString = updateMessage.toString();
 
               // Send back response (round query) on NEW_ROUND.
               for (Session sess : room.getUserSessions()) {
-                sess.getRemote().sendString(updateMessage.toString());
+                sess.getRemote().sendString(updateMessageString);
               }
             }
           }
@@ -222,10 +225,11 @@ public class ServerSocket {
                 updateMessage.addProperty("type",
                     MESSAGE_TYPE.ROUND_END.ordinal());
                 updateMessage.addProperty("payload", updatePayload.toString());
+                updateMessageString = updateMessage.toString();
 
                 // Send back response (round query) on NEW_ROUND.
                 for (Session sess : room.getUserSessions()) {
-                  sess.getRemote().sendString(updateMessage.toString());
+                  sess.getRemote().sendString(updateMessageString);
                 }
               }
             }
@@ -254,11 +258,12 @@ public class ServerSocket {
 	
 	            updateMessage.addProperty("type", MESSAGE_TYPE.USER_JOIN.ordinal());
 	            updateMessage.addProperty("payload", updatePayload.toString());
+	            updateMessageString = updateMessage.toString();
 	
 	            // Send back response (user id, username) on USER_JOIN
 	            for (Session sess : room.getUserSessions()) {
 	            	if(!sess.equals(session)) {
-	            		sess.getRemote().sendString(updateMessage.toString());
+	            		sess.getRemote().sendString(updateMessageString);
 	            	}
 	            }
 	            
@@ -356,11 +361,12 @@ public class ServerSocket {
           updateMessage.addProperty("type",
               MESSAGE_TYPE.PLAYER_GUESS.ordinal());
           updateMessage.addProperty("payload", updatePayload.toString());
+          updateMessageString = updateMessage.toString();
 
           // Send back response if valid (suggestion, score, user id,
           // playerScore) on PLAYER_GUESS.
           for (Session sess : room.getUserSessions()) {
-            sess.getRemote().sendString(updateMessage.toString());
+            sess.getRemote().sendString(updateMessageString);
           }
 
           break;
@@ -391,9 +397,10 @@ public class ServerSocket {
           updateMessage.addProperty("type",
               MESSAGE_TYPE.USER_CHAT.ordinal());
           updateMessage.addProperty("payload", updatePayload.toString());
+          updateMessageString = updateMessage.toString();
 
           for (Session sess : room.getUserSessions()) {
-            sess.getRemote().sendString(updateMessage.toString());
+            sess.getRemote().sendString(updateMessageString);
           }
           break;
         default:

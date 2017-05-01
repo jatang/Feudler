@@ -1,5 +1,6 @@
 package edu.brown.cs.termproject.scoring;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,7 +27,7 @@ public class Suggestion implements Cluster {
    *          the tokenized embeddings of the phrase
    */
   public Suggestion(List<WordVector> vectors, String phrase, int score) {
-    this.vectors = vectors;
+    this.vectors = ImmutableList.copyOf(vectors);
     this.originalPhrase = phrase;
     this.score = score;
   }
@@ -45,8 +46,8 @@ public class Suggestion implements Cluster {
   }
 
   /*
-   * Computes the avg similarity of each word in the first list to the closest
-   * match in the second.
+   * Computes the average similarity of each word in the first list to the
+   * closest match in the second.
    */
   private double avgSimilarity(List<WordVector> these,
       List<WordVector> others) {
@@ -79,24 +80,29 @@ public class Suggestion implements Cluster {
   public int getScore() {
     return score;
   }
-  
+
   @Override
   public String toString() {
-	  return getResponse();
+    return getResponse();
   }
-  
+
   @Override
   public boolean equals(Object other) {
-	  if(!(other instanceof Suggestion)) {
-		  return false;
-	  }
-	  
-	  Suggestion otherSuggestion = (Suggestion) other;
-	  return originalPhrase.equals(otherSuggestion.getResponse());
+    if (!(other instanceof Suggestion)) {
+      return false;
+    }
+
+    Suggestion otherSuggestion = (Suggestion) other;
+    return originalPhrase.equals(otherSuggestion.getResponse());
   }
-  
+
   @Override
   public int hashCode() {
-	  return Objects.hash(getResponse());
+    return Objects.hash(getResponse());
+  }
+
+  @Override
+  public List<WordVector> getVectors() {
+    return vectors;
   }
 }

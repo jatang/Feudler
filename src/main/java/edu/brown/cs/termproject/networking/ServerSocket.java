@@ -60,7 +60,8 @@ public class ServerSocket {
     JsonObject connMessage = new JsonObject();
 
     connMessage.addProperty("type", MESSAGE_TYPE.CONNECT.ordinal());
-
+    connMessage.addProperty("payload", new JsonObject().toString());
+    
     session.getRemote().sendString(connMessage.toString());
   }
 
@@ -140,18 +141,19 @@ public class ServerSocket {
           }
 
           if (session.equals(room.getCreator())) {
-            room.newGame(/* Settings */);
-          }
+        	  JsonObject settings = payload.get("settings").getAsJsonObject();
+            room.newGame(settings.get("rounds").getAsInt());
+            
+            updateMessage = new JsonObject();
+            updatePayload = new JsonObject();
 
-          updateMessage = new JsonObject();
-          updatePayload = new JsonObject();
+            updateMessage.addProperty("type", MESSAGE_TYPE.NEW_GAME.ordinal());
+            updateMessage.addProperty("payload", updatePayload.toString());
 
-          updateMessage.addProperty("type", MESSAGE_TYPE.NEW_GAME.ordinal());
-          updateMessage.addProperty("payload", updatePayload.toString());
-
-          // Send back response on NEW_GAME.
-          for (Session sess : room.getUserSessions()) {
-            sess.getRemote().sendString(updateMessage.toString());
+            // Send back response on NEW_GAME.
+            for (Session sess : room.getUserSessions()) {
+              sess.getRemote().sendString(updateMessage.toString());
+            }
           }
 
           break;

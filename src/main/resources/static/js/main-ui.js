@@ -461,6 +461,7 @@ class Connection {
     }
 
     receiveNewRoundMessage(payload) {
+    	$guess.val("");
         game.nextRound(payload.query, payload.numResponses, 30);
     }
 

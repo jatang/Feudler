@@ -80,7 +80,7 @@ public class Room {
   /**
    * Creates a new Game for the Room.
    */
-  public void newGame(/* Settings */) {
+  public void newGame(int rounds /* Settings */) {
     if (game != null) {
       game.endGame();
     }
@@ -93,7 +93,7 @@ public class Room {
     }
 
     try {
-      List<QueryResponses> queryResponses = new qGenerator().nRandomQrs(5);
+      List<QueryResponses> queryResponses = new qGenerator().nRandomQrs(rounds);
       game = new Game(playingUsers, queryResponses /* , Settings */);
     } catch (SQLException e) {
       e.printStackTrace();

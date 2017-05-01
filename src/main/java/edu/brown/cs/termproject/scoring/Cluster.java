@@ -66,4 +66,11 @@ interface Cluster {
    * @return the similarity threshold
    */
   public double similarityThreshold();
+
+  /**
+   * Gets the vectors that is used to represent the cluster.
+   *
+   * @return a list of wordvectors
+   */
+  public List<WordVector> getVectors();
 }

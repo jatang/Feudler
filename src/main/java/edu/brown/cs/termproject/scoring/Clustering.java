@@ -125,14 +125,51 @@ public class Clustering<T extends Cluster> {
    * gets updated). Used when making a cluster out of suggestions returned from
    * Google, or when adding a guess to a pre-existing cluster. Important: if the
    * phrase matches *any* cluster, it adds the phrase to the clustering that is
-   * closest.
+   * closest. If it matches none, and consists of only stopwords, then it
+   * returns absent and doesn't add the phrase to the clustering.
    * 
    * @param phrase
    *          the guess or answer to add to the cluster
    * @return the updated cluster that the word was put into
    */
-  public T add(String phrase) {
+  public Optional<T> add(String phrase) {
     List<WordVector> vectors = model.tokenize(phrase);
+    Optional<T> bestMatch = clusterOf(vectors);
+
+    if (bestMatch.isPresent()) {
+      bestMatch.get().add(vectors);
+      return bestMatch;
+    } else {
+      T newCluster = factory.newInstance(vectors, phrase, total);
+      if (newCluster.getVectors().isEmpty()) {
+        // Checks that the response isn't just stopwords.
+        return Optional.absent();
+      }
+      total += 1;
+      clusters.add(newCluster);
+      return Optional.of(newCluster);
+    }
+  }
+
+  /**
+   * Gets the first cluster in the clustering that the word belongs to, returns
+   * absent if no such cluster exists. Used to check if a player gets points for
+   * their guess. See clusterOf(List[WordVector]) for the real functionality.
+   *
+   * @param phrase
+   *          the user's guess while playing the game
+   * @return the cluster that the word belongs to, none if no such cluster
+   *         exists in the clustering. does not make a new cluster out of the
+   *         word
+   */
+  public Optional<T> clusterOf(String phrase) {
+    return clusterOf(model.tokenize(phrase));
+  }
+
+  /*
+   * Helper for clusterOf and add.
+   */
+  private Optional<T> clusterOf(List<WordVector> vectors) {
     Optional<Pair<T, Double>> bestMatch = Optional.absent();
 
     for (T cluster : clusters) {
@@ -150,42 +187,25 @@ public class Clustering<T extends Cluster> {
     }
 
     if (bestMatch.isPresent()) {
-      T best = bestMatch.get().getLeft();
-      best.add(vectors);
-      return best;
-    } else {
-      total += 1;
-      T newCluster = factory.newInstance(vectors, phrase, total);
-      clusters.add(newCluster);
-      return newCluster;
-    }
-  }
-
-  /**
-   * Gets the first cluster in the clustering that the word belongs to, returns
-   * absent if no such cluster exists. Used to check if a player gets points for
-   * their guess.
-   *
-   * @param phrase
-   *          the user's guess while playing the game
-   * @return the cluster that the word belongs to, none if no such cluster
-   *         exists in the clustering. does not make a new cluster out of the
-   *         word
-   */
-  public Optional<T> clusterOf(String phrase) {
-    List<WordVector> vectors = model.tokenize(phrase);
-    for (T cluster : clusters) {
-      if (cluster.contains(vectors)) {
-        return Optional.of(cluster);
-      }
+      return Optional.of(bestMatch.get().getLeft());
     }
     return Optional.absent();
   }
 
+  /**
+   * Gets the size of the clustering.
+   * 
+   * @return the number of unique clusters in the clustering
+   */
   public int size() {
     return total;
   }
 
+  /**
+   * Gets the clusters as a list. Returns an immutable list.
+   *
+   * @return a list of the clusters
+   */
   public List<T> asList() {
     return ImmutableList.copyOf(clusters);
   }

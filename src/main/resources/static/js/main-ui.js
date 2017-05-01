@@ -265,9 +265,9 @@ class Connection {
         this.connection.onerror = function (error) {
             console.log('Error Logged: ' + error); //log errors
         };
-        this.connection.onmessage = function (message) {
+        this.connection.onmessage = function (messageEvent) {
+            const message = JSON.parse(messageEvent.data);
             console.log(message);
-            console.log(JSON.parse(message));
             switch (message.type) {
                 case CONNECT:
                     console.log("websocket connected");

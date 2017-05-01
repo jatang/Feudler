@@ -207,7 +207,7 @@ function reveal(answer, index, score, flagMissed) {
             }
         }
 
-        if (game.round.answersSeen.size >= game.round.size) {
+        if (game.round.answersSeen.size >= game.round.size && game.hosting) {
             game.round.end();
         }
     } else {
@@ -229,7 +229,7 @@ function setUpButtons() {
 // Is called when the play button is first clicked. Should construct a new
 // Round with a query appropriate to the user's chosen settings.
 function startGame() {
-    game = new Game($("#player-type-multi")[0].checked, $sliderRounds.slider("value"), true);
+    game = new Game(true, $("#player-type-multi")[0].checked, $sliderRounds.slider("value"), "", "");
     game.configure();
     connection.sendNewRoundMessage();
 }
@@ -267,23 +267,24 @@ class Connection {
         };
         this.connection.onmessage = function (messageEvent) {
             const message = JSON.parse(messageEvent.data);
-            console.log(message);
+            const payload = JSON.parse(message.payload);
+            // console.log(message);
             switch (message.type) {
                 case CONNECT:
                     console.log("websocket connected");
                     break;
                 case CREATE_ROOM:
-                    this.receiveCreateMessage(message.payload);
+                    connection.receiveCreateMessage(payload);
                     break;
                 case USER_JOIN:
-                    this.receiveJoinMessage(message.payload);
+                    connection.receiveJoinMessage(payload);
                     break;
                 case NEW_ROUND:
-                    this.receiveNewRoundMessage(message.payload);
+                    connection.receiveNewRoundMessage(payload);
                     break;
                 case PLAYER_GUESS:
                     //TODO: Make sure answer is correct AND hasn't been guessed yet
-                    this.receiveGuessMessage(message.payload);
+                    connection.receiveGuessMessage(payload);
                     break;
                 default:
                     console.log("Unknown message type received: " + message.type);
@@ -314,8 +315,9 @@ class Connection {
         // this.receiveCreateMessage(message)
     }
 
-    receiveCreateMessage(message) {
-        game.id = message.roomId;
+    receiveCreateMessage(payload) {
+        console.log("server gave us payload: " + payload);
+        game.id = payload.roomId;
         this.sendJoinMessage();
         this.sendNewGameMessage();
     }
@@ -324,17 +326,19 @@ class Connection {
         const message = {
             type: USER_JOIN,
             payload: {
-                roomId: this.id,
-                username: this.username
+                roomId: game.id,
+                username: game.username
             }
         };
+        console.log(message);
+        console.log(JSON.stringify(message));
         this.connection.send(JSON.stringify(message));
         // message.userId = 5;
         // this.receiveJoinMessage(message);
     }
 
-    receiveJoinMessage(message) {
-        game.userId = message.userId;
+    receiveJoinMessage(payload) {
+        game.userId = payload.userId;
     }
 
     sendNewGameMessage() {
@@ -369,8 +373,8 @@ class Connection {
         // this.receiveNewRoundMessage(message);
     }
 
-    receiveNewRoundMessage(message) {
-        game.nextRound(message.query, message.numResponses, 30, false);
+    receiveNewRoundMessage(payload) {
+        game.nextRound(payload.query, payload.numResponses, 30, false);
     }
 
     sendGuessMessage(query) {
@@ -392,11 +396,11 @@ class Connection {
         // }
     }
 
-    receiveGuessMessage(message) {
-        reveal(message.suggestion, message.suggestionIndex, message.score, false);
+    receiveGuessMessage(payload) {
+        reveal(payload.suggestion, payload.suggestionIndex, payload.score, false);
     }
 
-    sendGetRemainingMessage() {
+    sendEndRound() {
         const message = {};
         // TODO: actually implement for Websockets
         // const rem = new Array();
@@ -409,8 +413,8 @@ class Connection {
         // this.receiveGetRemainingMessage(message);
     }
 
-    receiveGetRemainingMessage(message) {
-        message.remaining.forEach((value, key, map) => {
+    receiveEndRound(payload) {
+        payload.remaining.forEach((value, key, map) => {
             reveal(value.answer, value.index, value.score, true);
         });
     }
@@ -428,9 +432,10 @@ class Box {
 // hosting is a boolean flag, true if the user creating the game is the host;
 // false if they're just joining an existing game
 class Game {
-    constructor(multiplayer, roundsRemaining, id, username) {
+    constructor(hosting, multiplayer, roundsRemaining, id, username) {
         this.score = 0;
         // Boolean flag
+        this.hosting = hosting;
         this.multiplayer = multiplayer;
         this.round = undefined;
         this.roundsRemaining = roundsRemaining;
@@ -443,12 +448,12 @@ class Game {
         const message = (this.id === "") ? connection.sendCreateMessage() : connection.sendJoinMessage();
     }
 
-    nextRound(query, size, duration, multiplayer) {
+    nextRound(query, size, duration, hosting) {
         if (this.roundsRemaining > 0) {
             $nextRound.hide("fade", () => {
                 $submit.show("fade");
             });
-            this.round = new Round(query, size, duration, false);
+            this.round = new Round(query, size, duration, hosting);
             this.roundsRemaining--;
             this.round.start();
         } else {
@@ -460,13 +465,13 @@ class Game {
 
 class Round {
     // Duration is in seconds
-    constructor(query, size, duration, multiplayer) {
+    constructor(query, size, duration, hosting) {
         this.query = query;
         this.answersSeen = new Set();
         this.over = false;
         this.size = size;
         this.duration = duration;
-        this.multiplayer = multiplayer;
+        this.hosting = hosting;
         this.countdown = new Countdown(duration);
         this.timer = undefined;
 
@@ -497,11 +502,11 @@ class Round {
         $timer.text(formatSeconds(this.duration));
         this.timer = setInterval(() => {
             const curTime = this.countdown.tick();
-            if (curTime < 0) {
+            if (curTime < 0 && this.hosting) {
                 this.end();
             } else {
                 $timer.text(formatSeconds(curTime));
-                if (curTime === 0) {
+                if (curTime === 0 && this.hosting) {
                     this.end();
                 }
             }
@@ -511,9 +516,10 @@ class Round {
     end() {
         this.over = true;
         clearInterval(this.timer);
-        connection.sendGetRemainingMessage();
         $submit.hide("fade", () => {
-            $nextRound.show("fade");
+            if (this.hosting) {
+                $nextRound.show("fade")
+            }
         });
     }
 

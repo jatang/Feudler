@@ -55,6 +55,11 @@ public class DBConnector {
 
   private Connection conn;
 
+  /**
+   * Checks if the database contains the given query.
+   * @param query - the query to check for the presence of
+   * @return - boolean corresponding to whether or not the query is contained
+   */
   public boolean containsQuery(String query) {
     try (PreparedStatement prep = conn
         .prepareStatement("SELECT COUNT(*) FROM queries WHERE query = ?;");) {

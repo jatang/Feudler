@@ -50,8 +50,8 @@ public class ServerSocket {
 
   private static enum MESSAGE_TYPE {
     CONNECT, CREATE_ROOM, CUSTOM_QUERY, NEW_GAME, NEW_ROUND, ROUND_END,
-    USER_JOIN,
-    USER_LEFT, PLAYER_GUESS, USER_CHAT
+    UPDATE_TIME,
+    USER_JOIN, USER_LEFT, PLAYER_GUESS, USER_CHAT
   }
 
   private static final MESSAGE_TYPE[] MESSAGE_VALUES = MESSAGE_TYPE.values();
@@ -142,7 +142,7 @@ public class ServerSocket {
             return;
           }
 
-          if (session.equals(room.getCreator())) {
+          if (session.equals(room.getCreator()) && room.getGame() != null) {
             JsonObject settings = payload.get("settings").getAsJsonObject();
             room.newGame(settings.get("rounds").getAsInt());
 
@@ -172,7 +172,7 @@ public class ServerSocket {
             return;
           }
 
-          if (session.equals(room.getCreator())) {
+          if (session.equals(room.getCreator()) && room.getGame() != null) {
             QueryResponses roundQuery = room.getGame().newRound();
 
             updateMessage = new JsonObject();
@@ -209,21 +209,26 @@ public class ServerSocket {
             return;
           }
 
-          if (session.equals(room.getCreator())) {
+          if (session.equals(room.getCreator()) && room.getGame() != null) {
             QueryResponses roundQuery = room.getGame().endRound();
             if (roundQuery != null) {
               updateMessage = new JsonObject();
               updatePayload = new JsonObject();
               JsonArray suggestions = new JsonArray();
 
+              Set<Suggestion> alreadyGuessed =
+                  room.getGame().getGuessedSuggestions();
               for (Suggestion sugg : roundQuery.getResponses().asList()) {
-                JsonObject suggestionData = new JsonObject();
-                suggestionData.addProperty("suggestion", sugg.getResponse());
-                suggestionData.addProperty("suggestionIndex", sugg.getScore());
-                suggestionData.addProperty("score",
-                    (10 - sugg.getScore()) * 1000);
+                if (!alreadyGuessed.contains(sugg)) {
+                  JsonObject suggestionData = new JsonObject();
+                  suggestionData.addProperty("suggestion", sugg.getResponse());
+                  suggestionData.addProperty("suggestionIndex",
+                      sugg.getScore());
+                  suggestionData.addProperty("score",
+                      (10 - sugg.getScore()) * 1000);
 
-                suggestions.add(suggestionData);
+                  suggestions.add(suggestionData);
+                }
               }
 
               updatePayload.addProperty("suggestions", suggestions.toString());
@@ -341,7 +346,7 @@ public class ServerSocket {
           }
 
           User found = room.getUser(session);
-          if (found == null) {
+          if (room.getGame() == null || found == null) {
             return;
           }
 
@@ -412,6 +417,38 @@ public class ServerSocket {
 
           for (Session sess : room.getUserSessions()) {
             sess.getRemote().sendString(updateMessageString);
+          }
+          break;
+        case UPDATE_TIME:
+          // Payload contains room link/id, time
+
+          // Check whether room id is valid and whether user is owner. If so,
+          // update the time
+
+          room = ROOMS.get(payload.get("roomId").getAsString());
+          if (room == null) {
+            return;
+          }
+
+          if (session.equals(room.getCreator()) && room.getGame() != null) {
+            double time = payload.get("time").getAsDouble();
+
+            room.getGame().setTime(time);
+
+            updateMessage = new JsonObject();
+            updatePayload = new JsonObject();
+
+            updatePayload.addProperty("time", time);
+
+            updateMessage.addProperty("type",
+                MESSAGE_TYPE.UPDATE_TIME.ordinal());
+            updateMessage.addProperty("payload", updatePayload.toString());
+            updateMessageString = updateMessage.toString();
+
+            // Send back response (time) on UPDATE_TIME.
+            for (Session sess : room.getUserSessions()) {
+              sess.getRemote().sendString(updateMessageString);
+            }
           }
           break;
         default:

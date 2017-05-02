@@ -23,6 +23,7 @@ public class Game {
   private final Map<User, Player> playerMap = new ConcurrentHashMap<>();
   private int playerLimit = 1;
   private int currRound = -1;
+  private double time = 0;
 
   private final List<QueryResponses> queries;
   private Set<Suggestion> alreadyGuessed;
@@ -109,6 +110,25 @@ public class Game {
       alreadyGuessed.addAll(curr.getResponses().asList());
     }
     return curr;
+  }
+
+  /**
+   * Gets the current time left.
+   *
+   * @return Returns a double representing the time left.
+   */
+  public double getTime() {
+    return time;
+  }
+
+  /**
+   * Sets the current time left.
+   *
+   * @param time
+   *          A double representing the time left.
+   */
+  public void setTime(double time) {
+    this.time = time;
   }
 
   /**

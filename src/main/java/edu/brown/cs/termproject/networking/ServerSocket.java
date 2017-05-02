@@ -259,23 +259,6 @@ public class ServerSocket {
               double time = payload.get("timeSeconds").getAsDouble();
 
               room.getGame().setTime(time);
-
-              updateMessage = new JsonObject();
-              updatePayload = new JsonObject();
-
-              updatePayload.addProperty("timeSeconds", time);
-
-              updateMessage.addProperty("type",
-                  MESSAGE_TYPE.UPDATE_TIME.ordinal());
-              updateMessage.addProperty("payload", updatePayload.toString());
-              updateMessageString = updateMessage.toString();
-
-              // Send back response (time) on UPDATE_TIME.
-              for (Session sess : room.getUserSessions()) {
-              	if(session != room.getCreator()) {
-              		sess.getRemote().sendString(updateMessageString);
-              	}
-              }
             }
             break;
         case USER_JOIN:
@@ -304,7 +287,7 @@ public class ServerSocket {
               } else {
             	  updatePayload.addProperty("score", room.getGame().getPlayerScore(addedUser));
             	  updatePayload.addProperty("query", room.getGame().getCurrentQuery());
-            	  updatePayload.addProperty("timeSeconds", room.getGame().getCurrentQuery());
+            	  updatePayload.addProperty("timeSeconds", room.getGame().getTime());
               }
 
               updateMessage.addProperty("type",
@@ -327,7 +310,7 @@ public class ServerSocket {
                   userData.addProperty("username", user.getUsername());
                   int score = room.getGame() == null ? 0
                       : room.getGame().getPlayerScore(user);
-                  updatePayload.addProperty("score", score);
+                  userData.addProperty("score", score);
 
                   users.add(userData);
                 }

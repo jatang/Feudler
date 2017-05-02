@@ -214,11 +214,13 @@ function validateJoin() {
     let valid = true;
     const $name = $("#name").removeClass( "ui-state-error" );
     const $room = $("#room").removeClass( "ui-state-error" );
+    console.log("ROOM:" + $room.val())
     valid = valid && checkLength( $name, "username", 1, 10 );
     valid = valid && checkLength( $room, "room number", 6, 6 );
     if (valid) {
-        $dialog.dialog( "close" );
         joinGame($room.val(), $name.val());
+        $dialog.dialog( "close" );
+        console.log(`room: ${$room.val()}`);
     }
 }
 
@@ -312,18 +314,27 @@ function setSingleplayerScore(points) {
 }
 
 function configureMultiplayerScore(userArr) {
-    console.log("configScore called on: " + userArr);
+    console.log("configScore called on: ");
+    console.log(userArr);
     userArr.forEach((elt) => {
+        console.log("adding row for " + elt.username);
         addMultiplayerScoreRow(elt.userId, elt.username, elt.score);
     });
 }
 
 function addMultiplayerScoreRow(userId, username, score) {
-    $multiScore.append(`<li id="usr${userId}">${username} - ${score}</li>`);
+    const rowId = `usr${userId}`;
+    $multiScore.append(`<li id="${rowId}"></li>`);
+    let row = `${username}`;
+    for (let i = username.length; i < 10; i++) {
+        row += " ";
+    }
+    row += ` - ${score}`;
+    $multiScore.find(`#${rowId}`).text(row);
 }
 
 function updateMultiplayerScore(userId, username, score) {
-    $(`#user${userId}`).text(`${elt.username} - ${elt.score}`);
+    $(`#user${userId}`).text(`${username} - ${score}`);
 }
 
 class Countdown {
@@ -416,7 +427,7 @@ class Connection {
             type: USER_JOIN,
             payload: {
                 roomId: game.id,
-                username: game.username
+                username: game.hosting ? "Host" : game.username
             }
         };
         this.connection.send(JSON.stringify(message));
@@ -442,23 +453,22 @@ class Connection {
                 $home.hide("fade", () => {
                     $playSingle.show("fade");
                 });
-                game.nextRound(payload.query, payload.numResponses, payload.timeLeft);
+                game.nextRound(payload.query, payload.numResponses, payload.timeSeconds);
                 JSON.parse(payload.guessed).forEach((elt) => {
                     reveal(elt.response, elt.responseIndex, elt.score, false);
                 });
             }
-            if (!game.multiplayer) {
+            if (game.multiplayer) {
+                if (!game.hosting) {
+                    configureMultiplayerScore(JSON.parse(payload.users));
+                }
+                $multiScore.show("fade", 0);
+            } else {
                 $singleScore.show("fade", 0);
             }
         }
         if (game.multiplayer) {
-            // If current user is not the one joining the game
-            if(payload.users === undefined) {
-                addMultiplayerScoreRow(payload.userId, payload.username, payload.score);
-            } else {
-                configureMultiplayerScore(JSON.parse(payload.users));
-            }
-            $multiScore.show("fade", 0);
+            addMultiplayerScoreRow(payload.userId, payload.username, payload.score);
         }
     }
 

@@ -42,16 +42,13 @@ let connection;
 $(document).ready(() => {
     connection = new Connection("ws://localhost:4567/connection");
     $home =$("#home");
-    $settings = $("#settings");
-    $custom = $("#custom");
-    $playSingle = $("#play-single");
+    $settings = $("#settings").addClass("hide", 0);
+    $custom = $("#custom").addClass("hide", 0);
+    $playSingle = $("#play-single").addClass("hide", 0);
+    $singleScore = $("#singleplayerScore").addClass("hide", 0);
+    $multiScore = $("#multiplayerScore").addClass("hide", 0);
 
-    $settings.addClass("hide", 0);
-    $custom.addClass("hide", 0);
-    $playSingle.addClass("hide", 0);
-
-    $nextRound = $("#next-round");
-    $nextRound.addClass("hide", 0);
+    $nextRound = $("#next-round").addClass("hide", 0);
     $nextRound.click(() => connection.sendNewRoundMessage());
 
     $submit = $("#submit");
@@ -79,7 +76,7 @@ $(document).ready(() => {
         if (event.keyCode == 13) {
             game.round.checkAnswer();
         }
-    })
+    });
 
 // Deals with making sure incompatible settings can't be chosen together
     $modeMeta.change(() => {
@@ -251,9 +248,9 @@ function reveal(answer, index, score, flagMissed) {
     if (index >= 0) {
         let $toUpdate;
         if (index < 5) {
-            $toUpdate = $("#answer-table-1 tr:nth-child(" + (index + 1) + ") td");
+            $toUpdate = $("#answer-table-1").find("tr:nth-child(" + (index + 1) + ")").find("td");
         } else if (index <= 9) {
-            $toUpdate = $("#answer-table-2 tr:nth-child(" + (index - 4) + ") td");
+            $toUpdate = $("#answer-table-2").find("tr:nth-child(" + (index - 4) + ")").find("td");
         } else {
             console.log("Error: received index=" + index);
             return;
@@ -262,10 +259,11 @@ function reveal(answer, index, score, flagMissed) {
         if (flagMissed) {
             $toUpdate.addClass("missed");
         } else {
-            if (!game.round.answersSeen.has(answer)) {
-                addPoints(score);
-                game.round.answersSeen.add(answer);
-            }
+            // TODO: remove once server can handle scoring
+            // if (!game.round.answersSeen.has(answer)) {
+            //     addPoints(score);
+            //     game.round.answersSeen.add(answer);
+            // }
         }
 
         if (game.round.answersSeen.size >= game.round.size) {
@@ -298,7 +296,7 @@ function startGame() {
 }
 
 function joinGame(roomId, username) {
-    game = new Game(false, true, null, roomId, username)
+    game = new Game(false, true, null, roomId, username);
     game.configure();
 }
 
@@ -308,9 +306,19 @@ function formatSeconds(timeInSeconds) {
     return minutes + ":" + ((seconds < 10) ? "0" : "") + seconds;
 }
 
-function addPoints(toAdd) {
-    game.score += Number(toAdd);
-    $score.text(game.score);
+function setSingleplayerScore(points) {
+    $score.text(points);
+}
+
+function configureMultiplayerScore(userArr) {
+    console.log("configScore called on: " + userArr);
+    userArr.forEach((elt) => {
+        $multiScore.append(`<li id="usr${elt.userId}">${elt.username} - ${elt.score}</li>`);
+    });
+}
+
+function updateMultiplayerScore(userId, username, score) {
+    $(`#user${userId}`).text(`${elt.username} - ${elt.score}`);
 }
 
 class Countdown {
@@ -339,7 +347,7 @@ class Connection {
         this.connection.onmessage = function (messageEvent) {
             const message = JSON.parse(messageEvent.data);
             const payload = JSON.parse(message.payload);
-            // console.log(message);
+            console.log(message);
             switch (message.type) {
                 case CONNECT:
                     console.log("websocket connected");
@@ -367,18 +375,18 @@ class Connection {
             }
         };
         // TODO: Remove when server side works
-        this.answers = new Map([
-            ["subway", new Box(0, "subway", 100000)],
-            ["weigh", new Box(1, "weigh", 50000)],
-            ["play", new Box(2, "play", 20000)],
-            ["spray", new Box(3, "spray", 10000)],
-            ["pay", new Box(4, "pay", 5000)],
-            ["kyrie", new Box(5, "kyrie", 2000)],
-            ["pray", new Box(6, "pray", 1000)],
-            ["pompeii", new Box(7, "pompeii", 500)],
-            ["say", new Box(8, "say", 0)],
-            // ["say", new Box(9, "say", 0)]
-        ]);
+        // this.answers = new Map([
+        //     ["subway", new Box(0, "subway", 100000)],
+        //     ["weigh", new Box(1, "weigh", 50000)],
+        //     ["play", new Box(2, "play", 20000)],
+        //     ["spray", new Box(3, "spray", 10000)],
+        //     ["pay", new Box(4, "pay", 5000)],
+        //     ["kyrie", new Box(5, "kyrie", 2000)],
+        //     ["pray", new Box(6, "pray", 1000)],
+        //     ["pompeii", new Box(7, "pompeii", 500)],
+        //     ["say", new Box(8, "say", 0)],
+        //     // ["say", new Box(9, "say", 0)]
+        // ]);
     }
 
     sendCreateMessage() {
@@ -413,19 +421,31 @@ class Connection {
 
     receiveJoinMessage(payload) {
         if (payload.userId === "") {
-            $("#room").addClass( "ui-state-error" );
+            $("#room").addClass("ui-state-error");
             updateTips("No room exists with that ID.");
             return;
         }
-        game.userId = payload.userId;
-        if (game.hosting) {
-            $settings.hide("fade", () => {
-                $playSingle.show("fade");
+        if (game.userId === "") {
+            game.userId = payload.userId;
+            if (game.hosting) {
+                $settings.hide("fade", () => {
+                    $playSingle.show("fade");
+                });
+            } else {
+                $home.hide("fade", () => {
+                    $playSingle.show("fade");
+                });
+            }
+            JSON.parse(payload.guessed).forEach((elt) => {
+                reveal(elt.response, elt.responseIndex, elt.score, false);
             });
-        } else {
-            $home.hide("fade", () => {
-                $playSingle.show("fade");
-            });
+            if (!game.multiplayer) {
+                $singleScore.show("fade", 0);
+            }
+        }
+        if (game.multiplayer) {
+            configureMultiplayerScore(JSON.parse(payload.users));
+            $multiScore.show("fade", 0);
         }
     }
 
@@ -462,13 +482,13 @@ class Connection {
     }
 
     receiveNewRoundMessage(payload) {
-        console.log(payload);
         if (payload.query === "") {
             console.log("ERROR: no rounds remaining");
             window.location.replace("/");
+        } else {
+            $guess.val("");
+            game.nextRound(payload.query, payload.numResponses, 30);
         }
-        $guess.val("");
-        game.nextRound(payload.query, payload.numResponses, 30);
     }
 
     sendGuessMessage(query) {
@@ -495,6 +515,11 @@ class Connection {
             // TODO: action on wrong guess
         } else {
             reveal(payload.suggestion, payload.suggestionIndex, payload.score, false);
+            if(game.multiplayer) {
+                updateMultiplayerScore(payload.userId, payload.username, payload.playerScore);
+            } else {
+                setSingleplayerScore(payload.playerScore);
+            }
         }
     }
 
@@ -548,7 +573,6 @@ class Box {
 // false if they're just joining an existing game
 class Game {
     constructor(hosting, multiplayer, roundsRemaining, id, username) {
-        this.score = 0;
         // Boolean flag
         this.hosting = hosting;
         this.multiplayer = multiplayer;
@@ -586,7 +610,7 @@ class Round {
         this.timer = undefined;
 
         $("#query").text(this.query);
-        $("#answer-table-1 tr td").each((index, elt) => {
+        $("#answer-table-1").find("td").each((index, elt) => {
             const boxNum = index + 1;
             if (boxNum > size) {
                 $(elt).text("").addClass("unavailable");
@@ -596,7 +620,7 @@ class Round {
                 }).removeClass("missed unavailable");
             }
         });
-        $("#answer-table-2 tr td").each((index, elt) => {
+        $("#answer-table-2").find("td").each((index, elt) => {
             const boxNum = index + 6;
             if (boxNum > size) {
                 $(elt).text("").addClass("unavailable");

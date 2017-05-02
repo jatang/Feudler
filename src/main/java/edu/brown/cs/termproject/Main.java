@@ -42,10 +42,10 @@ public final class Main {
 
   private void run() {
 
-    Suggestions.getGoogleSuggestions("soda mixed with ")
-        .forEach((c) -> System.out.println(c));
+//    Suggestions.getGoogleSuggestions("soda mixed with ")
+//        .forEach((c) -> System.out.println(c));
 
-    // runSparkServer(4567);
+     runSparkServer(4567);
   }
 
   private static void runSparkServer(int port) {

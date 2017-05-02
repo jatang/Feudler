@@ -5,95 +5,10 @@ Todo:
 	and similarity will make a check for synonyms when returning similarity.
 	3. LED of 1 on tokenize.
 	4. Make sure newExistingSuggestionClustering() is being used.
-
-Maybe Todo:
-	1. Fill in guess class. Also figure out add in the process.
-	2. Test guess class.
-	(could also just use Suggestions for users' guesses, if so change it to Cluster 
-	and change Clustering to not take a generic, and maybe extend AbsCollection<String>)
-
-Cluster the following (also add certainties):
-	- "get its food" and "hunt"
-	- "old" and "how old"
-	- "ghost pepper" and "hot pepper"
-	- "have social media" and "have a instagram"
-	- "meals" and "lunch"/"breakfast"/"dinner"
-	- "retainers" and "braces" and "invisalign"
-	- "sleep" and "slumber"
-	- "have a baby" and "get pregnant" and "give birth" and "pregnant"
-	- "on my test" and "on the act" and "on the gre" and "on the act"
-	- "in french" and "in spanish"
-	- "alcohol" and "rum" and "vodka" and "liquor"
-	- "tv" and "television"
-	- "aids" and "hiv"
-	- "on carry on" and "on an airplane"
-	- "explode" and "pop multiple times"
-	- "an animal" and "a mammal"
-	- "lick" and "lick you" (already does this)
-	- "peanut butter" and "butter" (already does this)
-	- "good for you" and "good for dogs" and "good for your hair"
-	- "wolverine how dare he" and "wolverine"
-	- "worms" and "ringworm"
-	- "vegetable" and "potato" (already does this)
-	- "meals" and "food" (already does this)
-	- "walk" and "run" and "move"
-	- "noise" and "sound"
-	- "rest" and "sleep"
-	- "a cat" and "a feline"
-	- "president do" and "executive branch do"
-	- "wardrobe" and "closet"
-	- "death" and "dead"
-	- "ill" and "sick" (already does this)
-	- "betrothed" and "married"
-	- "on antibiotics" and "while on antibiotics"
-	- "on paleo" and "on a diet"
-	- "sad" and "blue"
-	- "cute" and "hot"
-	- "right after your period" and "before your period" and "the day before your period" and "without a period" and "while on period" (already does this)
-	- "before donating blood" and "before giving blood" (already does this)
-	- "a game" and "a game meme" and "a game gif" (already does this)
-	- "fast" and "fasting"?
-	- "a fun game" and "a game" (already does this)
-	- "luigi" and "mario"
-	- "candy smash" and "candy crush"
-	- "clinging" and "cling" and "clingy"
-	- "kind" and "affectionate"
-	- "thin" and "skinny"
-	- "weird" and "crazy" (already does this)
-	- "nice" and "affectionate"
-	- "peel a banana" and "open a banana"
-	- "noise" and "sound" and "sounding"
-	- "on mars" and "on venus" and "on jupiter" and "on neptune"
-	- "forever" and "for eternity"
-	- "car" and "vehicle" (already does this)
-	- "you mean lyrics" and "you mean"
-	- "good" and "good for you"
-	- "tats" and "have tatoos"
-	- "cards" and "solitaire"?
-	- "everything" and "everyone"
 	
-Don't cluster:
-	- "bread" and "butter"
-	- "live" and "do cats live"
-	- "leave scars" and "never leave"
-	- "vodka" and "beer"
-	- "farts" and "farts burn"
-	- "animals" and "animals hibernate"
-	- "fear" and "brains enjoy fear"
-	- "beer" and "wine"?
-	- "rain" and "snow"
-	- "sad" and "sorry"
-	- "hello world" and "hello neighbor" (already does this)
-	- "mean" and "dreams mean"
-	- "emojis nice" and "emojis mean"
-	- "erin moran die" and "hitler die" and "joan crawford die" and "bruce lee die"
-	- "sense" and "sensitive" (already does this)
-	- "without lungs" and "with one lung" (already does this)
-	- "carnivore" and "mammal"?
-	- "dog" and "smarter than a dog"
-	- "animal" and "mammal"
-	- "dreams mean" and "you mean"
-	- "ladybugs eat" and "deer eat"
+General:
+	1. Meta mode.
+	2. Display stopwords in game.
 
 Random:
 	Difficult queries:

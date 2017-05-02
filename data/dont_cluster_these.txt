@@ -1,0 +1,79 @@
+0.6
+bread
+butter
+-
+1.0
+live
+do cats live
+-
+1.0
+leave scars
+never leave
+-
+0.6
+vodka
+beer
+-
+1.0
+animals
+animals hibernate
+-
+1.0
+fear
+brains enjoy fear
+-
+0.6
+beer
+wine
+vodka
+-
+0.4
+rain
+snow
+-
+0.6
+sad
+sorry
+-
+1.0
+hello world
+hello neighbor
+-
+1.0
+mean
+dreams mean
+-
+0.8
+emojis nice
+emojis mean
+-
+1.0
+erin moran die
+hitler die
+joan crawford die
+bruce lee die
+-
+1.0
+sense
+sensitive
+-
+1.0
+carnivore
+mammal
+-
+1.0
+dog
+smarter than a dog
+-
+0.6
+animal
+mammal
+-
+1.0
+dreams mean
+you mean
+-
+1.0
+ladybugs eat
+deer eat
+-

@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import com.google.common.collect.ImmutableList;
+
+import edu.brown.cs.termproject.networking.Suggestions;
+
 import java.util.stream.Collectors;
 import org.junit.Test;
 
@@ -97,4 +100,43 @@ public class ClusteringTest {
             .clusterOf("a small tiny ball").get().getResponse(),
         "a small ball");
   }
+
+  @Test
+  public void testEmbeddingsTest() {
+    Word2VecModel model = new Word2VecModel("data/test_embeddings.sqlite3",
+        "data/stopwords.txt");
+    Clustering<Suggestion> clustering;
+    clustering = Clustering.newSuggestionClustering(ImmutableList.of("faraday",
+        "yemen", "opaque", "discover", "yell", "faraday", "yemen", "shout"),
+        model);
+    assertEquals(clustering.size(), 6);
+  }
+
+  @Test
+  public void someTest() {
+    /*
+     * System.out.println(Clustering .newSuggestionClustering(
+     * ImmutableList.of("alcohol", "water", "soda", "tequila", "beer", "rum",
+     * "cough syrup", "milk", "vodka", "mentos"), Word2VecModel.model)
+     * .asList().stream().map((Suggestion s) -> s.getResponse())
+     * .collect(Collectors.toList()));
+     */
+
+    assertEquals(
+        Clustering
+            .newSuggestionClustering(
+                ImmutableList.of("alcohol", "water", "soda", "tequila", "beer",
+                    "rum", "cough syrup", "milk", "vodka", "mentos"),
+                Word2VecModel.model)
+            .asList().stream().map((Suggestion s) -> s.getResponse())
+            .collect(Collectors.toList()),
+        ImmutableList.of("alcohol", "water", "soda", "tequila", "beer",
+            "cough syrup", "milk", "mentos"));
+  }
+
+  @Test
+  public void suggestionCodeTest() {
+    Suggestions.getUniqueGoogleSuggestionEndings("soda mixed with");
+  }
+
 }

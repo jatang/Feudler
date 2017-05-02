@@ -13,5 +13,4 @@ public class insertMain {
     qGen.insertFile("data/foodQs.txt", "checked", false);
     qGen.insertFile("data/drinkQs.txt", "checked", false);
   }
-
 }

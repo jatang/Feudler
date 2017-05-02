@@ -78,14 +78,30 @@ public class Game {
   }
   
   /**
-   * Gets the current Query from the Game if available.
+   * Gets the current query from the Game if available.
    *
    * @return Returns a String representing the current query for
    *         the round.
    */
   public synchronized String getCurrentQuery() {
 	  QueryResponses curr = getCurrentQueryResponses();
+	  if(curr == null) {
+		  return "";
+	  }
 	  return curr.getQuery();
+  }
+  
+  /**
+   * Gets the current number of responses for the current query.
+   *
+   * @return Returns an int representing the number of responses for the current query.
+   */
+  public synchronized int getCurrentNumResponses() {
+	  QueryResponses curr = getCurrentQueryResponses();
+	  if(curr == null) {
+		  return 0;
+	  }
+	  return curr.getResponses().size();
   }
 
   /**

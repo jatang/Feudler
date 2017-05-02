@@ -4,11 +4,11 @@ const CUSTOM_QUERY = 2;
 const NEW_GAME = 3;
 const NEW_ROUND = 4;
 const ROUND_END = 5;
-const USER_JOIN = 6;
-const USER_LEFT = 7;
-const PLAYER_GUESS = 8;
-const USER_CHAT = 9;
-const UPDATE_TIME = 10;
+const UPDATE_TIME = 6;
+const USER_JOIN = 7;
+const USER_LEFT = 8;
+const PLAYER_GUESS = 9;
+const USER_CHAT = 10;
 
 const MAX_ROUNDS = 5;
 let game;
@@ -217,6 +217,7 @@ function validateJoin() {
     valid = valid && checkLength( $name, "username", 1, 10 );
     valid = valid && checkLength( $room, "room number", 6, 6 );
     if (valid) {
+        $dialog.dialog( "close" );
         joinGame($room.val(), $name.val());
     }
 }
@@ -313,8 +314,12 @@ function setSingleplayerScore(points) {
 function configureMultiplayerScore(userArr) {
     console.log("configScore called on: " + userArr);
     userArr.forEach((elt) => {
-        $multiScore.append(`<li id="usr${elt.userId}">${elt.username} - ${elt.score}</li>`);
+        addMultiplayerScoreRow(elt.userId, elt.username, elt.score);
     });
+}
+
+function addMultiplayerScoreRow(userId, username, score) {
+    $multiScore.append(`<li id="usr${userId}">${username} - ${score}</li>`);
 }
 
 function updateMultiplayerScore(userId, username, score) {
@@ -415,6 +420,7 @@ class Connection {
             }
         };
         this.connection.send(JSON.stringify(message));
+        console.log("join msg sent");
         // message.userId = 5;
         // this.receiveJoinMessage(message);
     }
@@ -425,6 +431,7 @@ class Connection {
             updateTips("No room exists with that ID.");
             return;
         }
+        // if user is the one joining game
         if (game.userId === "") {
             game.userId = payload.userId;
             if (game.hosting) {
@@ -435,16 +442,22 @@ class Connection {
                 $home.hide("fade", () => {
                     $playSingle.show("fade");
                 });
+                game.nextRound(payload.query, payload.numResponses, payload.timeLeft);
+                JSON.parse(payload.guessed).forEach((elt) => {
+                    reveal(elt.response, elt.responseIndex, elt.score, false);
+                });
             }
-            JSON.parse(payload.guessed).forEach((elt) => {
-                reveal(elt.response, elt.responseIndex, elt.score, false);
-            });
             if (!game.multiplayer) {
                 $singleScore.show("fade", 0);
             }
         }
         if (game.multiplayer) {
-            configureMultiplayerScore(JSON.parse(payload.users));
+            // If current user is not the one joining the game
+            if(payload.users === undefined) {
+                addMultiplayerScoreRow(payload.userId, payload.username, payload.score);
+            } else {
+                configureMultiplayerScore(JSON.parse(payload.users));
+            }
             $multiScore.show("fade", 0);
         }
     }
@@ -588,6 +601,7 @@ class Game {
     }
 
     nextRound(query, size, duration) {
+        console.log("received nextRound");
         $nextRound.hide("fade", () => {
             $submit.show("fade");
         });

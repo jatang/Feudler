@@ -66,8 +66,8 @@ public class Game {
   /**
    * Gets the current QueryResponses from the Game if available.
    *
-   * @return Returns a QueryResponses object representing the current query for the
-   *         round.
+   * @return Returns a QueryResponses object representing the current query for
+   *         the round.
    */
   private synchronized QueryResponses getCurrentQueryResponses() {
     if (currRound < 0 || currRound >= queries.size()) {
@@ -75,16 +75,16 @@ public class Game {
     }
     return queries.get(currRound);
   }
-  
+
   /**
-   * Gets the Set of Suggestion already guessed for the current round. 
+   * Gets the Set of Suggestion already guessed for the current round.
    *
-   * @return Returns a Set of Suggestion already guessed for the current round. 
+   * @return Returns a Set of Suggestion already guessed for the current round.
    */
   public synchronized Set<Suggestion> getGuessedSuggestions() {
-	  return new HashSet<>(alreadyGuessed);
+    return new HashSet<>(alreadyGuessed);
   }
-  
+
   /**
    * Moves the Game to the next round if queries are still unplayed.
    *
@@ -92,11 +92,11 @@ public class Game {
    *         round.
    */
   public synchronized QueryResponses newRound() {
-	currRound++;
+    currRound++;
     alreadyGuessed = new HashSet<>();
     return getCurrentQueryResponses();
   }
-  
+
   /**
    * Ends the current Game round.
    *
@@ -105,8 +105,8 @@ public class Game {
    */
   public synchronized QueryResponses endRound() {
     QueryResponses curr = getCurrentQueryResponses();
-    if(curr != null) {
-    	alreadyGuessed.addAll(curr.getResponses().asList());
+    if (curr != null) {
+      alreadyGuessed.addAll(curr.getResponses().asList());
     }
     return curr;
   }
@@ -123,6 +123,7 @@ public class Game {
    */
   public synchronized Optional<Suggestion> score(User user, String guess) {
     if (playerMap.containsKey(user)) {
+      Player player = playerMap.get(user);
 
       if (currRound < 0 || currRound >= queries.size()) {
         return Optional.absent();
@@ -130,14 +131,15 @@ public class Game {
 
       // TODO Save guess
 
-      
-      Optional<Suggestion> res = queries.get(currRound).getResponses().clusterOf(guess);
-      if(res.isPresent()) {
-    	  Suggestion closest = res.get();
-    	  if(!alreadyGuessed.contains(closest)) {
-    		  alreadyGuessed.add(closest);
-    		  return res;
-    	  }
+      Optional<Suggestion> res =
+          queries.get(currRound).getResponses().clusterOf(guess);
+      if (res.isPresent()) {
+        Suggestion closest = res.get();
+        if (!alreadyGuessed.contains(closest)) {
+          alreadyGuessed.add(closest);
+          player.setScore(player.getScore() + (10 - closest.getScore()) * 1000);
+          return res;
+        }
       }
     }
 

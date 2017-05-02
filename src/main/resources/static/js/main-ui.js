@@ -325,16 +325,11 @@ function configureMultiplayerScore(userArr) {
 function addMultiplayerScoreRow(userId, username, score) {
     const rowId = `usr${userId}`;
     $multiScore.append(`<li id="${rowId}"></li>`);
-    let row = `${username}`;
-    for (let i = username.length; i < 10; i++) {
-        row += " ";
-    }
-    row += ` - ${score}`;
-    $multiScore.find(`#${rowId}`).text(row);
+    updateMultiplayerScore(userId, username, score);
 }
 
 function updateMultiplayerScore(userId, username, score) {
-    $(`#user${userId}`).text(`${username} - ${score}`);
+    $multiScore.find($(`#usr${userId}`)).text(`${username} - ${score}`);
 }
 
 class Countdown {
@@ -408,7 +403,9 @@ class Connection {
     sendCreateMessage() {
         const message = {
             type: CREATE_ROOM,
-            payload: {}
+            payload: {
+                maxUsers: $("#player-type-multi")[0].checked ? 5 : 1
+            }
         };
         this.connection.send(JSON.stringify(message));
         // message.roomId = 3;
@@ -437,6 +434,7 @@ class Connection {
     }
 
     receiveJoinMessage(payload) {
+        console.log("RECEIVED JOIN w/ username=" + payload.username);
         if (payload.userId === "") {
             $("#room").addClass("ui-state-error");
             updateTips("No room exists with that ID.");
@@ -479,6 +477,7 @@ class Connection {
                 roomId: game.id,
                 settings: {
                     type: game.multiplayer ? "multiplayer" : "singleplayer",
+                    // maxPlayers: game.multiplayer ? 5 : 1,
                     // mode: $modeMeta[0].checked ? "meta" : "standard",
                     rounds: game.roundsRemaining
                 }
@@ -515,6 +514,7 @@ class Connection {
     }
 
     sendGuessMessage(query) {
+        console.log("GUESSING: " + query);
         const message = {
             type: PLAYER_GUESS,
             payload: {

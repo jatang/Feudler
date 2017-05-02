@@ -318,6 +318,7 @@ public class ServerSocket {
 
               JsonArray guessed = new JsonArray();
               if (room.getGame() != null) {
+            	  updatePayload.addProperty("numResponses", room.getGame().getGuessedSuggestions().size());
                 for (Suggestion sugg : room.getGame().getGuessedSuggestions()) {
                   JsonObject suggestionData = new JsonObject();
                   suggestionData.addProperty("suggestion", sugg.getResponse());
@@ -328,6 +329,8 @@ public class ServerSocket {
 
                   guessed.add(suggestionData);
                 }
+              } else {
+            	  updatePayload.addProperty("numResponses", 0);
               }
 
               updatePayload.addProperty("users", users.toString());

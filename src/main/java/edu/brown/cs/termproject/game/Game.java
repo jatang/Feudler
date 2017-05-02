@@ -21,7 +21,7 @@ import edu.brown.cs.termproject.scoring.Suggestion;
 public class Game {
 
   private final Map<User, Player> playerMap = new ConcurrentHashMap<>();
-  private int playerLimit = 1;
+  private int playerLimit = 10;
   private int currRound = -1;
   private double time = 0;
 

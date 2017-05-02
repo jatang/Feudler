@@ -383,7 +383,7 @@ public class ServerSocket {
 
           if (res.isPresent()) {
             Suggestion sugg = res.get();
-
+            
             updatePayload.addProperty("suggestion", sugg.getResponse());
             updatePayload.addProperty("suggestionIndex", sugg.getScore());
             updatePayload.addProperty("score", (10 - sugg.getScore()) * 1000);

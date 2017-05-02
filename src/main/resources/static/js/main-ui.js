@@ -298,7 +298,7 @@ function startGame() {
 
 function joinGame(roomId, username) {
     game = new Game(false, true, null, roomId, username);
-    game.configure();
+    connection.sendJoinMessage();
 }
 
 function formatSeconds(timeInSeconds) {

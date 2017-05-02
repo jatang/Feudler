@@ -269,11 +269,11 @@ public class ServerSocket {
         	
           room = ROOMS.get(payload.get("roomId").getAsString());
           if (room != null) {      	  
-
-            User addedUser =
+            boolean added =
                 room.addUser(session, payload.get("username").getAsString());
 
-            if (addedUser != null) {
+            if (added) {
+            	User addedUser = room.getUser(session);
               updateMessage = new JsonObject();
               updatePayload = new JsonObject();
 
@@ -462,6 +462,6 @@ public class ServerSocket {
     // - Number of Rounds
     // - (Category type)
 
-    return new Room(generateRoomId(), session /* ,Settings from payload */);
+    return new Room(generateRoomId(), session, payload.get("maxUsers").getAsInt() /* ,Settings from payload */);
   }
 }

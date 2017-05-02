@@ -21,7 +21,7 @@ import edu.brown.cs.termproject.scoring.Suggestion;
 public class Game {
 
   private final Map<User, Player> playerMap = new ConcurrentHashMap<>();
-  private int playerLimit = 10;
+  private final int maxPlayers;
   private int currRound = -1;
   private double time = 0;
 
@@ -37,7 +37,8 @@ public class Game {
    *          A List of QueryResponses representing the queries for the duration
    *          of the Game.
    */
-  public Game(List<QueryResponses> queries /* Settings */) {
+  public Game(int maxPlayers, List<QueryResponses> queries /* Settings */) {
+	this.maxPlayers = maxPlayers;
     this.queries = queries;
   }
 
@@ -51,11 +52,12 @@ public class Game {
    *          A List of QueryResponses representing the queries for the duration
    *          of the Game.
    */
-  public Game(List<User> users, List<QueryResponses> queries
+  public Game(int maxPlayers, List<User> users, List<QueryResponses> queries
   /* Settings */) {
-
+	this.maxPlayers = maxPlayers;
+	
     for (User user : users) {
-      if (playerMap.size() >= playerLimit) {
+      if (playerMap.size() >= maxPlayers) {
         break;
       }
       playerMap.put(user, new Player(user));
@@ -197,7 +199,7 @@ public class Game {
    * Ends the Game and saves all data collected during the Game.
    */
   public synchronized void endGame() {
-    // Save all data
+    // TODO Save all data
   }
 
   /**
@@ -225,7 +227,7 @@ public class Game {
    *         to be added.
    */
   public boolean addPlayer(User user) {
-    if (playerMap.size() >= playerLimit) {
+    if (playerMap.size() >= maxPlayers) {
       return false;
     }
     return playerMap.put(user, new Player(user)) != null;

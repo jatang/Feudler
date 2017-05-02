@@ -24,9 +24,9 @@ public class Room {
   private final String roomId;
   private final Session creator;
   private final Map<Session, User> userMap = new ConcurrentHashMap<>();
-  private int userId = 0;
 
   private Game game = null;
+  private int maxUsers = 1;
   // Store Settings if needed
 
   /**
@@ -37,9 +37,10 @@ public class Room {
    * @param creator
    *          A Session representing the session that instantiated the Game.
    */
-  public Room(String roomId, Session creator /* , Settings */ ) {
+  public Room(String roomId, Session creator, int maxUsers /* , Settings */ ) {
     this.roomId = roomId;
     this.creator = creator;
+    this.maxUsers = maxUsers;
   }
 
   /**
@@ -49,15 +50,20 @@ public class Room {
    *          A Session representing the session of the new User.
    * @param username
    *          A String representing the username of the new User.
-   * @return Returns the User entered if adding succeeded.
+   * @return Returns a boolean representing success.
    */
-  public synchronized User addUser(Session session, String username) {
-    userMap.put(session, new User(userId++, username, false));
-    User added = userMap.get(session);
-    if(game != null && added != null && !added.isSpectating()) {
-    	game.addPlayer(added);
-    }
-    return added;
+  public synchronized boolean addUser(Session session, String username) {
+	  
+	if(userMap.size() < maxUsers) {
+	    userMap.put(session, new User(userMap.size(), username, false));
+	    User added = userMap.get(session);
+	    if(game != null && added != null && !added.isSpectating()) {
+	    	game.addPlayer(added);
+	    }
+	    return true;
+	 }
+	
+	return false;
   }
 
   /**
@@ -100,7 +106,7 @@ public class Room {
 
     try {
       List<QueryResponses> queryResponses = new qGenerator().nRandomQrs(rounds);
-      game = new Game(playingUsers, queryResponses /* , Settings */);
+      game = new Game(maxUsers, playingUsers, queryResponses /* , Settings */);
     } catch (SQLException e) {
       e.printStackTrace();
     }

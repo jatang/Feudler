@@ -50,8 +50,7 @@ public class ServerSocket {
 
   private static enum MESSAGE_TYPE {
     CONNECT, CREATE_ROOM, CUSTOM_QUERY, NEW_GAME, NEW_ROUND, ROUND_END,
-    UPDATE_TIME,
-    USER_JOIN, USER_LEFT, PLAYER_GUESS, USER_CHAT
+    UPDATE_TIME, USER_JOIN, USER_LEFT, PLAYER_GUESS, USER_CHAT
   }
 
   private static final MESSAGE_TYPE[] MESSAGE_VALUES = MESSAGE_TYPE.values();
@@ -245,28 +244,68 @@ public class ServerSocket {
             }
           }
           break;
+        case UPDATE_TIME:
+            // Payload contains room link/id, time
+
+            // Check whether room id is valid and whether user is owner. If so,
+            // update the time
+
+            room = ROOMS.get(payload.get("roomId").getAsString());
+            if (room == null) {
+              return;
+            }
+
+            if (session.equals(room.getCreator()) && room.getGame() != null) {
+              double time = payload.get("timeSeconds").getAsDouble();
+
+              room.getGame().setTime(time);
+
+              updateMessage = new JsonObject();
+              updatePayload = new JsonObject();
+
+              updatePayload.addProperty("timeSeconds", time);
+
+              updateMessage.addProperty("type",
+                  MESSAGE_TYPE.UPDATE_TIME.ordinal());
+              updateMessage.addProperty("payload", updatePayload.toString());
+              updateMessageString = updateMessage.toString();
+
+              // Send back response (time) on UPDATE_TIME.
+              for (Session sess : room.getUserSessions()) {
+              	if(session != room.getCreator()) {
+              		sess.getRemote().sendString(updateMessageString);
+              	}
+              }
+            }
+            break;
         case USER_JOIN:
           // Payload contains room link/id, user username
 
           // Check whether room id is valid and is accepting users. If so, add
           // user to room.
-
+        	
           room = ROOMS.get(payload.get("roomId").getAsString());
-          if (room != null) {
+          if (room != null) {      	  
 
             User addedUser =
                 room.addUser(session, payload.get("username").getAsString());
 
             if (addedUser != null) {
-              int score;
               updateMessage = new JsonObject();
               updatePayload = new JsonObject();
 
               updatePayload.addProperty("userId", addedUser.getId());
               updatePayload.addProperty("username", addedUser.getUsername());
-              score = room.getGame() == null ? 0
-                  : room.getGame().getPlayerScore(addedUser);
-              updatePayload.addProperty("score", score);
+              
+              if(room.getGame() == null) {
+            	  updatePayload.addProperty("score", 0);
+            	  updatePayload.addProperty("query", "");
+            	  updatePayload.addProperty("timeSeconds", 0);
+              } else {
+            	  updatePayload.addProperty("score", room.getGame().getPlayerScore(addedUser));
+            	  updatePayload.addProperty("query", room.getGame().getCurrentQuery());
+            	  updatePayload.addProperty("timeSeconds", room.getGame().getCurrentQuery());
+              }
 
               updateMessage.addProperty("type",
                   MESSAGE_TYPE.USER_JOIN.ordinal());
@@ -286,7 +325,7 @@ public class ServerSocket {
                   JsonObject userData = new JsonObject();
                   userData.addProperty("userId", user.getId());
                   userData.addProperty("username", user.getUsername());
-                  score = room.getGame() == null ? 0
+                  int score = room.getGame() == null ? 0
                       : room.getGame().getPlayerScore(user);
                   updatePayload.addProperty("score", score);
 
@@ -418,40 +457,6 @@ public class ServerSocket {
 
           for (Session sess : room.getUserSessions()) {
             sess.getRemote().sendString(updateMessageString);
-          }
-          break;
-        case UPDATE_TIME:
-          // Payload contains room link/id, time
-
-          // Check whether room id is valid and whether user is owner. If so,
-          // update the time
-
-          room = ROOMS.get(payload.get("roomId").getAsString());
-          if (room == null) {
-            return;
-          }
-
-          if (session.equals(room.getCreator()) && room.getGame() != null) {
-            double time = payload.get("timeSeconds").getAsDouble();
-
-            room.getGame().setTime(time);
-
-            updateMessage = new JsonObject();
-            updatePayload = new JsonObject();
-
-            updatePayload.addProperty("timeSeconds", time);
-
-            updateMessage.addProperty("type",
-                MESSAGE_TYPE.UPDATE_TIME.ordinal());
-            updateMessage.addProperty("payload", updatePayload.toString());
-            updateMessageString = updateMessage.toString();
-
-            // Send back response (time) on UPDATE_TIME.
-            for (Session sess : room.getUserSessions()) {
-            	if(session != room.getCreator()) {
-            		sess.getRemote().sendString(updateMessageString);
-            	}
-            }
           }
           break;
         default:

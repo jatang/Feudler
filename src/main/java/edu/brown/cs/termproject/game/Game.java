@@ -76,6 +76,17 @@ public class Game {
     }
     return queries.get(currRound);
   }
+  
+  /**
+   * Gets the current Query from the Game if available.
+   *
+   * @return Returns a String representing the current query for
+   *         the round.
+   */
+  public synchronized String getCurrentQuery() {
+	  QueryResponses curr = getCurrentQueryResponses();
+	  return curr.getQuery();
+  }
 
   /**
    * Gets the Set of Suggestion already guessed for the current round.

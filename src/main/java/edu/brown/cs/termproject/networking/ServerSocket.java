@@ -142,7 +142,7 @@ public class ServerSocket {
             return;
           }
 
-          if (session.equals(room.getCreator()) && room.getGame() != null) {
+          if (session.equals(room.getCreator())) {
             JsonObject settings = payload.get("settings").getAsJsonObject();
             room.newGame(settings.get("rounds").getAsInt());
 
@@ -174,7 +174,7 @@ public class ServerSocket {
 
           if (session.equals(room.getCreator()) && room.getGame() != null) {
             QueryResponses roundQuery = room.getGame().newRound();
-
+            
             updateMessage = new JsonObject();
             updatePayload = new JsonObject();
 

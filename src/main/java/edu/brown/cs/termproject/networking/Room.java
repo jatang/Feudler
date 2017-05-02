@@ -86,7 +86,7 @@ public class Room {
   /**
    * Creates a new Game for the Room.
    */
-  public void newGame(int rounds /* Settings */) {
+  public synchronized void newGame(int rounds /* Settings */) {
     if (game != null) {
       game.endGame();
     }
@@ -148,7 +148,7 @@ public class Room {
    *
    * @return Returns the Game associated with the Room.
    */
-  public Game getGame() {
+  public synchronized Game getGame() {
     return game;
   }
 

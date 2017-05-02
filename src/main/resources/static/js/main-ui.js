@@ -556,8 +556,8 @@ class Connection {
 
     receiveEndRound(payload) {
         JSON.parse(payload.suggestions).forEach((elt) => {
-            if (!game.round.answersSeen.has(elt.suggestion))
-                reveal(elt.suggestion, elt.suggestionIndex, elt.score, true);
+            // if (!game.round.answersSeen.has(elt.suggestion))
+            reveal(elt.suggestion, elt.suggestionIndex, elt.score, true);
         });
     }
 
@@ -565,6 +565,7 @@ class Connection {
         const message = {
             type: UPDATE_TIME,
             payload: {
+                roomId: game.id,
                 timeSeconds: timeSeconds
             }
         };

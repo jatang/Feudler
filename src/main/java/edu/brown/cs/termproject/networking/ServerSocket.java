@@ -432,14 +432,14 @@ public class ServerSocket {
           }
 
           if (session.equals(room.getCreator()) && room.getGame() != null) {
-            double time = payload.get("time").getAsDouble();
+            double time = payload.get("timeSeconds").getAsDouble();
 
             room.getGame().setTime(time);
 
             updateMessage = new JsonObject();
             updatePayload = new JsonObject();
 
-            updatePayload.addProperty("time", time);
+            updatePayload.addProperty("timeSeconds", time);
 
             updateMessage.addProperty("type",
                 MESSAGE_TYPE.UPDATE_TIME.ordinal());
@@ -448,7 +448,9 @@ public class ServerSocket {
 
             // Send back response (time) on UPDATE_TIME.
             for (Session sess : room.getUserSessions()) {
-              sess.getRemote().sendString(updateMessageString);
+            	if(session != room.getCreator()) {
+            		sess.getRemote().sendString(updateMessageString);
+            	}
             }
           }
           break;

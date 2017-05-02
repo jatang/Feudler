@@ -209,14 +209,14 @@ public class ServerSocket {
           }
 
           if (session.equals(room.getCreator()) && room.getGame() != null) {
+        	  Set<Suggestion> alreadyGuessed =
+                      room.getGame().getGuessedSuggestions();
             QueryResponses roundQuery = room.getGame().endRound();
             if (roundQuery != null) {
               updateMessage = new JsonObject();
               updatePayload = new JsonObject();
               JsonArray suggestions = new JsonArray();
 
-              Set<Suggestion> alreadyGuessed =
-                  room.getGame().getGuessedSuggestions();
               for (Suggestion sugg : roundQuery.getResponses().asList()) {
                 if (!alreadyGuessed.contains(sugg)) {
                   JsonObject suggestionData = new JsonObject();

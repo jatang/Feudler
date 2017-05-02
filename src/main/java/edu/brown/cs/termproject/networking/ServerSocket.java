@@ -370,6 +370,7 @@ public class ServerSocket {
             updatePayload.addProperty("suggestionIndex", "");
             updatePayload.addProperty("score", "");
             updatePayload.addProperty("userId", found.getId());
+            updatePayload.addProperty("username", found.getUsername());
             updatePayload.addProperty("playerScore",
                 room.getGame().getPlayerScore(found));
           }

@@ -44,7 +44,7 @@ final class SuggestionThresholdFinder {
       double badAccuracy = getAccuracy(badGroups, threshold);
       double score = (goodAccuracy + (1 - badAccuracy)) / 2;
 
-      System.out.println(goodAccuracy);
+      System.out.println(badAccuracy);
 
       totalWeights += score;
       thresholdTimesWeights += (score * threshold);
@@ -105,12 +105,12 @@ final class SuggestionThresholdFinder {
         for (int j = i + 1; j < words.size(); j++) {
           if (words.get(i).similarity(words.get(j)) >= threshold) {
             correct += priority;
-            if (Math.abs(threshold - 1) < 0.01) {
+            if (Math.abs(threshold - 2) < 0.01) {
               System.out
                   .println("Clustered: " + words.get(i) + ":" + words.get(j));
             }
           } else {
-            if (Math.abs(threshold - 1) < 0.01) {
+            if (Math.abs(threshold - 2) < 0.01) {
               System.out.println(
                   "Didn't cluster: " + words.get(i) + ":" + words.get(j));
             }

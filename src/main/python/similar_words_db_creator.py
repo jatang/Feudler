@@ -13,7 +13,6 @@ print 'Read file.'
 conn = sqlite3.connect(db_file)
 c = conn.cursor()
 
-# don't call these if the table already exists
 c.execute('CREATE TABLE IF NOT EXISTS similar (word1 text, word2 text) ')
 c.execute('CREATE INDEX IF NOT EXISTS idx_word ON similar (word1)')
 print 'Created table and index.'

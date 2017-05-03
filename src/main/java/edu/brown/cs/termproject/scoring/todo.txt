@@ -1,9 +1,4 @@
 
-Todo:
+Todo Scoring:
 	1. LED of 1 on tokenize, only use words when there's only one match.
-	(2. Add 10 nearest neighbors of each word to the similar_words database.)
-	3. Make sure newExistingSuggestionClustering() is being used.
-
-General:
-	1. Meta mode.
-	2. Display stopwords in game.
+	2. Make sure newExistingSuggestionClustering() is being used.

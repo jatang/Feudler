@@ -72,8 +72,8 @@ public class Word2VecModel implements AutoCloseable {
       embeddingStatement = embeddingConn
           .prepareStatement("select vector from embeddings where word=?;");
       similarConn = DriverManager.getConnection("jdbc:sqlite:" + similarPath);
-      similarStatement = similarConn
-          .prepareStatement("select word2 from similar where word1=?;");
+      similarStatement = similarConn.prepareStatement(
+          "select distinct word2 from similar where word1=?;");
 
       // Creates the word vocabulary.
       PreparedStatement allWordsStatement = embeddingConn

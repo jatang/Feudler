@@ -2,3 +2,10 @@
 Todo Scoring:
 	1. LED of 1 on tokenize, only use words when there's only one match.
 	2. Make sure newExistingSuggestionClustering() is being used.
+
+	
+Bad Word2Vec results:
+death/dying: 0.470971
+human/person: 0.299469
+medication/antibiotics: 0.544573
+wet/watery: 0.400615

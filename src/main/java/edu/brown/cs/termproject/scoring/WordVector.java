@@ -86,6 +86,10 @@ class WordVector {
    * @return the cosine similarity, a double between -1 and 1
    */
   public double similarity(WordVector other) {
+    if (word.equals(other.getWord())) {
+      return 1.0;
+    }
+
     if (similar.contains(other.getWord())) {
       return 1.0;
     }

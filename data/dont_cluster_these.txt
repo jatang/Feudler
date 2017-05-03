@@ -10,10 +10,6 @@ do cats live
 leave scars
 never leave
 -
-0.6
-vodka
-beer
--
 1.0
 animals
 animals hibernate
@@ -72,4 +68,20 @@ you mean
 15.0
 ladybugs eat
 deer eat
+-
+10.0
+dead
+short
+-
+10.0
+draw
+tie a tie
+-
+10.0
+get married
+get a passport
+-
+20.0
+die
+insurance go up
 -

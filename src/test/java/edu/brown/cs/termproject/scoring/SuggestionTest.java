@@ -70,4 +70,12 @@ public class SuggestionTest {
     Suggestion tu = new Suggestion(model.tokenize("get a passport"), "a", 0);
     assertTrue(su.similarity(tu) < su.similarityThreshold());
   }
+
+  @Test
+  public void anotherBadTest() {
+    // Suggestion su = new Suggestion(model.tokenize("die"), "", 0);
+    // Suggestion tu = new Suggestion(model.tokenize("insurance go up"), "a",
+    // 0);
+    // System.out.println(su.similarity(tu));
+  }
 }

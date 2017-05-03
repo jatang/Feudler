@@ -251,3 +251,15 @@ solitaire
 everything
 everyone
 -
+10.0
+dead
+dying
+-
+10.0
+medication
+antibiotics
+-
+10.0
+human
+person
+-

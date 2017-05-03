@@ -44,7 +44,7 @@ final class SuggestionThresholdFinder {
       double badAccuracy = getAccuracy(badGroups, threshold);
       double score = (goodAccuracy + (1 - badAccuracy)) / 2;
 
-      System.out.println(badAccuracy);
+      System.out.println(goodAccuracy);
 
       totalWeights += score;
       thresholdTimesWeights += (score * threshold);

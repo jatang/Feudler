@@ -8,8 +8,10 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
+import edu.brown.cs.termproject.networking.Room;
 import edu.brown.cs.termproject.networking.ServerSocket;
 import edu.brown.cs.termproject.networking.Suggestions;
+import edu.brown.cs.termproject.scoring.Suggestion;
 import freemarker.template.Configuration;
 import spark.ExceptionHandler;
 import spark.ModelAndView;
@@ -42,10 +44,22 @@ public final class Main {
 
   private void run() {
 
-//    Suggestions.getGoogleSuggestions("soda mixed with ")
-//        .forEach((c) -> System.out.println(c));
-
-     runSparkServer(4567);
+	  Room room = new Room("", null, 4);
+	  room.newGame(2);
+	  room.getGame().newRound();
+	  
+	  System.out.println(room.getGame().getCurrentQuery());
+	  
+	  for(Suggestion s : room.getGame().getCurrentQueryResponses().getResponses().asList()) {
+		  System.out.println(s.getResponse());
+	  }
+	  
+	  System.out.println();
+	  for(String s : room.getGame().getCurrentHints()) {
+		  System.out.println(s);
+	  }
+	  
+ //    runSparkServer(4567);
   }
 
   private static void runSparkServer(int port) {

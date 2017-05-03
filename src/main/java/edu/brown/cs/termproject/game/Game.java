@@ -1,16 +1,23 @@
 package edu.brown.cs.termproject.game;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Optional;
 
 import edu.brown.cs.termproject.networking.User;
 import edu.brown.cs.termproject.queryResponses.QueryResponses;
 import edu.brown.cs.termproject.scoring.Suggestion;
+import edu.brown.cs.termproject.scoring.Word2VecModel;
 
 /**
  * A class representing an individual game on the server (either single or
@@ -72,7 +79,7 @@ public class Game {
    * @return Returns a QueryResponses object representing the current query for
    *         the round.
    */
-  private synchronized QueryResponses getCurrentQueryResponses() {
+  public synchronized QueryResponses getCurrentQueryResponses() {
     if (currRound < 0 || currRound >= queries.size()) {
       return null;
     }
@@ -91,6 +98,39 @@ public class Game {
 		  return "";
 	  }
 	  return curr.getQuery();
+  }
+  
+  public synchronized List<String> getCurrentHints() {
+	  QueryResponses curr = getCurrentQueryResponses();
+	  if(curr == null) {
+		  return Collections.emptyList();
+	  }
+	  
+	  Set<String> stopwords = Word2VecModel.model.getStopwords();
+	  
+	  List<String> res = new ArrayList<>();
+	  for(Suggestion sugg : curr.getResponses().asList()) {
+		  Iterator<String> words = Arrays.asList(sugg.getResponse().split("\\s+")).iterator();
+		  
+		  String word;
+		  StringBuilder sb = new StringBuilder();
+		  
+		  while(words.hasNext()) {
+			  word = words.next();
+			  if(stopwords.contains(word)) {
+				  sb.append(word);
+			  } else {
+				  sb.append(StringUtils.repeat("_", word.length()));
+			  }
+			  
+			  if(words.hasNext()) {
+				  sb.append(" ");
+			  }
+		  }
+		  res.add(sb.toString());
+	  }
+	  
+	  return res;
   }
   
   /**

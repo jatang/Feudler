@@ -269,8 +269,9 @@ public class ServerSocket {
         	
           room = ROOMS.get(payload.get("roomId").getAsString());
           if (room != null) {      	  
-            boolean added =
+            final boolean added =
                 room.addUser(session, payload.get("username").getAsString());
+            final boolean gameInProgress = room.getGame() == null;
 
             if (added) {
             	User addedUser = room.getUser(session);
@@ -280,7 +281,7 @@ public class ServerSocket {
               updatePayload.addProperty("userId", addedUser.getId());
               updatePayload.addProperty("username", addedUser.getUsername());
               
-              if(room.getGame() == null) {
+              if(gameInProgress) {
             	  updatePayload.addProperty("score", 0);
             	  updatePayload.addProperty("query", "");
             	  updatePayload.addProperty("timeSeconds", 0);
@@ -308,7 +309,7 @@ public class ServerSocket {
                   JsonObject userData = new JsonObject();
                   userData.addProperty("userId", user.getId());
                   userData.addProperty("username", user.getUsername());
-                  int score = room.getGame() == null ? 0
+                  int score = gameInProgress ? 0
                       : room.getGame().getPlayerScore(user);
                   userData.addProperty("score", score);
 
@@ -450,6 +451,7 @@ public class ServerSocket {
       }
 
     } catch (Exception e) {
+    	//TODO Remove
       e.printStackTrace();
       System.out.println("ERROR: Unexpected message: " + received.toString());
     }

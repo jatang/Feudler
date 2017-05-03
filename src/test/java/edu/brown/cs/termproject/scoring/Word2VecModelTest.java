@@ -86,7 +86,7 @@ public class Word2VecModelTest {
 
     first = model.vectorOf("king");
     second = model.vectorOf("queen");
-    assertEquals(first.similarity(second), 0.651095, 0.0001);
+    assertEquals(first.similarity(second), 1.0, 0.0001);
 
     first = model.vectorOf("don't");
     second = model.vectorOf("stop");

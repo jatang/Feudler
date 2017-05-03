@@ -1,27 +1,9 @@
 
 Todo:
-	1. Write threshold finder and use it to find the optimal threshold.
-	2. Add synonym checker. Can be incorporated into Word2VecModel, 
-	and similarity will make a check for synonyms when returning similarity.
-	3. LED of 1 on tokenize.
-	4. Make sure newExistingSuggestionClustering() is being used.
-	
+	1. LED of 1 on tokenize, only use words when there's only one match.
+	(2. Add 10 nearest neighbors of each word to the similar_words database.)
+	3. Make sure newExistingSuggestionClustering() is being used.
+
 General:
 	1. Meta mode.
 	2. Display stopwords in game.
-
-Random:
-	Difficult queries:
-		- "help i"
-		- "how long"
-		- "why does a pig"
-		- "Stephen Colbert in"
-		- "what is the best"
-		- "how did my"
-		- "how does a rabbit"
-		- "is a dog"
-		- "is it okay to" (second one is "punch a nazi")
-		- "can you eat pizza with" (they're all medical)
-		- "how can an elephant"
-		- "why do some"
-		- "is a lion"

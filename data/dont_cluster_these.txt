@@ -2,11 +2,11 @@
 bread
 butter
 -
-1.0
+5.0
 live
 do cats live
 -
-1.0
+3.0
 leave scars
 never leave
 -
@@ -31,29 +31,25 @@ vodka
 rain
 snow
 -
-0.6
-sad
-sorry
--
-1.0
+10.0
 hello world
 hello neighbor
 -
-1.0
+5.0
 mean
 dreams mean
 -
-0.8
+2.0
 emojis nice
 emojis mean
 -
-1.0
+10.0
 erin moran die
 hitler die
 joan crawford die
 bruce lee die
 -
-1.0
+10.0
 sense
 sensitive
 -
@@ -61,7 +57,7 @@ sensitive
 carnivore
 mammal
 -
-1.0
+2.0
 dog
 smarter than a dog
 -
@@ -69,11 +65,11 @@ smarter than a dog
 animal
 mammal
 -
-1.0
+10.0
 dreams mean
 you mean
 -
-1.0
+15.0
 ladybugs eat
 deer eat
 -

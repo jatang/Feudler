@@ -5,8 +5,6 @@ import static org.junit.Assert.assertFalse;
 
 import com.google.common.collect.ImmutableList;
 
-import edu.brown.cs.termproject.networking.Suggestions;
-
 import java.util.stream.Collectors;
 import org.junit.Test;
 
@@ -83,10 +81,10 @@ public class ClusteringTest {
             "a small ball", "a very small ball"), Word2VecModel.model)
         .clusterOf("bigger").get().getResponse(), "big");
 
-    assertFalse(Clustering
-        .newSuggestionClustering(ImmutableList.of("big", "a big ball",
-            "a small ball", "a very small ball"), Word2VecModel.model)
-        .clusterOf("large").isPresent());
+    // assertFalse(Clustering
+    // .newSuggestionClustering(ImmutableList.of("big", "a big ball",
+    // "a small ball", "a very small ball"), Word2VecModel.model)
+    // .clusterOf("large").isPresent());
 
     assertFalse(Clustering
         .newSuggestionClustering(ImmutableList.of("big", "a big ball",
@@ -114,14 +112,6 @@ public class ClusteringTest {
 
   @Test
   public void someTest() {
-    /*
-     * System.out.println(Clustering .newSuggestionClustering(
-     * ImmutableList.of("alcohol", "water", "soda", "tequila", "beer", "rum",
-     * "cough syrup", "milk", "vodka", "mentos"), Word2VecModel.model)
-     * .asList().stream().map((Suggestion s) -> s.getResponse())
-     * .collect(Collectors.toList()));
-     */
-
     assertEquals(
         Clustering
             .newSuggestionClustering(
@@ -133,10 +123,4 @@ public class ClusteringTest {
         ImmutableList.of("alcohol", "water", "soda", "tequila", "beer",
             "cough syrup", "milk", "mentos"));
   }
-
-  @Test
-  public void suggestionCodeTest() {
-    Suggestions.getUniqueGoogleSuggestionEndings("soda mixed with");
-  }
-
 }

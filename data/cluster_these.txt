@@ -2,80 +2,80 @@
 get its food
 hunt
 -
-1.0
+20.0
 old
 how old
 -
-1.0
+10.0
 ghost pepper
 hot pepper
 -
-0.7
+5.0
 have social media
 have a instagram
 -
-0.8
+2.0
 meals
 lunch
 breakfast
 dinner
 -
-1.0
+10.0
 retainers
 braces
 invisalign
 -
-1.0
+20.0
 sleep
 slumber
 -
-1.0
+10.0
 have a baby
 get pregnant
 give birth
 pregnant
 -
-0.7
+2.0
 on my test
 on the act
 on the gre
 on the act
 -
-1.0
+6.0
 in french
 in spanish
 -
-0.8
+8.0
 alcohol
 rum
 vodka
 liquor
 -
-1.0
+20.0
 tv
 television
 -
-0.8
+5.0
 aids
 hiv
 -
-0.7
+5.0
 on carry on
 on an airplane
 -
-0.7
+2.0
 explode
 pop multiple times
 -
-0.6
+1.0
 an animal
 a mammal
 -
-1.0
+20.0
 lick
 lick you
 -
-0.7
+1.0
 peanut butter
 butter
 -
@@ -84,96 +84,96 @@ good for you
 good for dogs
 good for your hair
 -
-0.8
+1.0
 wolverine how dare he
 wolverine
 -
-1.0
+2.0
 worms
 ringworm
 -
-0.7
+1.0
 vegetable
 potato
 -
-1.0
+5.0
 meals
 food
 -
-1.0
+10.0
 walk
 run
 move
 -
-1.0
+5.0
 noise
 sound
 -
-1.0
+10.0
 rest
 sleep
 -
-1.0
+20.0
 a cat
 a feline
 -
-0.8
+5.0
 president do
 executive branch do
 -
-1.0
+10.0
 wardrobe
 closet
 -
-1.0
+20.0
 death
 dead
 -
-1.0
+20.0
 ill
 sick
 -
-1.0
+20.0
 betrothed
 married
 -
-1.0
+20.0
 on antibiotics
 while on antibiotics
 -
-0.5
+3.0
 on paleo
 on a diet
 -
-1.0
+2.0
 sad
 blue
 -
-1.0
+2.0
 cute
 hot
 -
-1.0
+6.0
 right after your period
 before your period
 the day before your period
 without a period
 while on period
 -
-1.0
+10.0
 before donating blood
 before giving blood
 -
-1.0
+20.0
 a game
 a game meme
 a game gif
 -
-0.7
+2.0
 fast
 fasting
 -
-1.0
+2.0
 a fun game
 a game
 -
@@ -181,33 +181,33 @@ a game
 luigi
 mario
 -
-0.7
+1.0
 candy smash
 candy crush
 -
-0.8
+1.0
 clinging
 cling
 clingy
 -
-1.0
+10.0
 kind
 affectionate
 nice
 -
-1.0
+5.0
 thin
 skinny
 -
-0.7
+5.0
 weird
 crazy
 -
-1.0
+10.0
 peel a banana
 open a banana
 -
-1.0
+5.0
 noise
 sound
 sounding
@@ -218,36 +218,36 @@ on venus
 on jupiter
 on neptune
 -
-1.0
+10.0
 forever
 for eternity
 -
-1.0
+20.0
 car
 vehicle
 automobile
 -
-0.8
+10.0
 the car moved
 the automobile drove away
 -
-1.0
+20.0
 you mean lyrics
 you mean
 -
-1.0
+20.0
 good
 good for you
 -
-1.0
+10.0
 tats
 have tatoos
 -
-0.5
+1.0
 cards
 solitaire
 -
-0.6
+1.0
 everything
 everyone
 -

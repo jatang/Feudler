@@ -263,3 +263,11 @@ antibiotics
 human
 person
 -
+10.0
+thinning
+thin
+-
+10.0
+feel tired
+sleepy
+-

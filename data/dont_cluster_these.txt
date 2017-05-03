@@ -85,3 +85,19 @@ get a passport
 die
 insurance go up
 -
+10.0
+know
+live
+-
+20.0
+see
+find my iphone
+-
+10.0
+live
+go home
+-
+2.0
+feel sick
+feel tired
+-

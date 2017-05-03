@@ -48,8 +48,9 @@ public class Suggestion implements Cluster {
   public double similarity(List<WordVector> otherSuggestion) {
     // Dividing by 2 is redundant but it keeps the scaling correct (max possible
     // is 1, min is -1).
-    return (avgSimilarity(vectors, otherSuggestion)
-        + avgSimilarity(otherSuggestion, vectors)) / 2;
+    return (avgSimilarity(vectors, otherSuggestion) * vectors.size()
+        + avgSimilarity(otherSuggestion, vectors) * otherSuggestion.size())
+        / (vectors.size() + otherSuggestion.size());
   }
 
   @Override

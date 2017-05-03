@@ -73,9 +73,8 @@ public class SuggestionTest {
 
   @Test
   public void anotherBadTest() {
-    // Suggestion su = new Suggestion(model.tokenize("die"), "", 0);
-    // Suggestion tu = new Suggestion(model.tokenize("insurance go up"), "a",
-    // 0);
+    // Suggestion su = new Suggestion(model.tokenize("see"), "", 0);
+    // Suggestion tu = new Suggestion(model.tokenize("find my iphone"), "a", 0);
     // System.out.println(su.similarity(tu));
   }
 }

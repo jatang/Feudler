@@ -43,7 +43,6 @@ public final class Main {
   }
 
   private void run() {
-
 	  Room room = new Room("", null, 4);
 	  room.newGame(2);
 	  room.getGame().newRound();
@@ -59,7 +58,7 @@ public final class Main {
 		  System.out.println(s);
 	  }
 	  
- //    runSparkServer(4567);
+	  runSparkServer(4567);
   }
 
   private static void runSparkServer(int port) {

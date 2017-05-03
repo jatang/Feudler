@@ -36,9 +36,23 @@ public class Word2VecModel implements AutoCloseable {
   // will not be a problem.
   private ImmutableSet<String> vocabulary;
   private ConcurrentMap<String, WordVector> cache;
-  private Connection conn;
-  private PreparedStatement statement;
+  private Connection embeddingConn;
+  private Connection similarConn;
+  private PreparedStatement embeddingStatement;
+  private PreparedStatement similarStatement;
   private ImmutableSet<String> stopwords;
+
+  /**
+   * Overloaded constructor for old code.
+   *
+   * @param dbPath
+   *          the path to the embeddings db
+   * @param stopwordPath
+   *          the path to the stopwords file
+   */
+  public Word2VecModel(String dbPath, String stopwordPath) {
+    this(dbPath, stopwordPath, "data/similar_words.sqlite3");
+  }
 
   /**
    * Instantiates a word2vec model using the database at the input path.
@@ -48,18 +62,21 @@ public class Word2VecModel implements AutoCloseable {
    * @param stopwordPath
    *          the path to the stopwords file
    */
-  public Word2VecModel(String dbPath, String stopwordPath) {
+  public Word2VecModel(String dbPath, String stopwordPath, String similarPath) {
     cache = new ConcurrentHashMap<>();
 
     try {
       Class.forName("org.sqlite.JDBC");
       String urlToDb = "jdbc:sqlite:" + dbPath;
-      conn = DriverManager.getConnection(urlToDb);
-      statement = conn
+      embeddingConn = DriverManager.getConnection(urlToDb);
+      embeddingStatement = embeddingConn
           .prepareStatement("select vector from embeddings where word=?;");
+      similarConn = DriverManager.getConnection("jdbc:sqlite:" + similarPath);
+      similarStatement = similarConn.prepareStatement(
+          "select distinct word2 from similar where word1=?;");
 
       // Creates the word vocabulary.
-      PreparedStatement allWordsStatement = conn
+      PreparedStatement allWordsStatement = embeddingConn
           .prepareStatement("select word from embeddings;");
       try (ResultSet results = allWordsStatement.executeQuery()) {
         Set<String> vocab = new HashSet<>();
@@ -69,8 +86,11 @@ public class Word2VecModel implements AutoCloseable {
         vocabulary = ImmutableSet.copyOf(vocab);
       }
 
-      statement.setString(1, "a");
-      statement.executeQuery(); // Checks that word and vector are fields.
+      embeddingStatement.setString(1, "a");
+      embeddingStatement.executeQuery(); // Checks that word/vector are fields.
+
+      similarStatement.setString(1, "ate");
+      similarStatement.executeQuery(); // Checks that word/vector are fields.
 
       // Reads stopwords from file.
       Set<String> temporaryStopwords = new HashSet<>();
@@ -106,12 +126,23 @@ public class Word2VecModel implements AutoCloseable {
     }
 
     try {
-      statement.setString(1, word);
-      try (ResultSet rs = statement.executeQuery()) {
+      embeddingStatement.setString(1, word);
+      try (ResultSet rs = embeddingStatement.executeQuery()) {
         if (rs.next()) {
-          WordVector vector = new WordVector(word, rs.getString(1));
-          cache.put(word, vector);
-          return vector;
+          similarStatement.setString(1, word);
+          try (ResultSet similarWords = similarStatement.executeQuery()) {
+            Set<String> allSimilar = new HashSet<>();
+            while (similarWords.next()) {
+              allSimilar.add(similarWords.getString(1));
+            }
+            similarWords.close();
+
+            WordVector vector = new WordVector(word, rs.getString(1),
+                allSimilar);
+            cache.put(word, vector);
+            rs.close();
+            return vector;
+          }
         } else {
           return new WordVector(word);
         }
@@ -134,8 +165,8 @@ public class Word2VecModel implements AutoCloseable {
   @Override
   public void close() {
     try {
-      statement.close();
-      conn.close();
+      embeddingStatement.close();
+      embeddingConn.close();
     } catch (SQLException exception) {
       exception.printStackTrace();
     }

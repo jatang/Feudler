@@ -1,6 +1,7 @@
 package edu.brown.cs.termproject.scoring;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -61,5 +62,12 @@ public class SuggestionTest {
     sug.add(model.tokenize("what a lively night"));
     sug.add(model.tokenize("what a lovely night"));
     assertEquals(old, sug.getVectors());
+  }
+
+  @Test
+  public void badTest() {
+    Suggestion su = new Suggestion(model.tokenize("get married"), "", 0);
+    Suggestion tu = new Suggestion(model.tokenize("get a passport"), "a", 0);
+    assertTrue(su.similarity(tu) < su.similarityThreshold());
   }
 }

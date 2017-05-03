@@ -14,7 +14,7 @@ import java.util.Objects;
 public class Suggestion implements Cluster {
 
   // Test the hyperparameter with different values.
-  private static final double THRESHOLD = 0.6;
+  private static final double THRESHOLD = 0.75;
 
   private List<WordVector> vectors;
   private String originalPhrase;

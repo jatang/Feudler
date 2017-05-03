@@ -66,6 +66,13 @@
 	padding: 0;
 }
 
+a:focus, a:hover{
+	border:none;
+	outline:none;
+	text-decoration:none;
+	color:inherit;
+}
+
 #multiplayerScore {
 	padding: 0;
 }

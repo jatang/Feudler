@@ -539,6 +539,7 @@ class Connection {
         } else {
             reveal(payload.suggestion, payload.suggestionIndex, payload.score, false);
             if(game.multiplayer) {
+                console.log(payload);
                 updateMultiplayerScore(payload.userId, payload.username, payload.playerScore);
             } else {
                 setSingleplayerScore(payload.playerScore);

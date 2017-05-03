@@ -389,6 +389,7 @@ public class ServerSocket {
             updatePayload.addProperty("suggestionIndex", sugg.getScore());
             updatePayload.addProperty("score", (10 - sugg.getScore()) * 1000);
             updatePayload.addProperty("userId", found.getId());
+            updatePayload.addProperty("username", found.getUsername());
             updatePayload.addProperty("playerScore",
                 room.getGame().getPlayerScore(found));
           } else {

@@ -21,6 +21,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
 <script src="../js/main-ui.js"></script>
 <div class="center-content">
+    <a href="/">
 	 		<span class="logo-text">
 	 			<span>G</span>
 	 			<span>o</span>
@@ -36,6 +37,7 @@
 	 			<span>e</span>
 	 			<span>r</span>
 	 		</span>
+    </a>
     <hr>
     <!-- Home screen -->
     <div id="home">

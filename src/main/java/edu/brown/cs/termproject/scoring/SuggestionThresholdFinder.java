@@ -128,12 +128,12 @@ final class SuggestionThresholdFinder {
         for (int j = i + 1; j < words.size(); j++) {
           if (words.get(i).similarity(words.get(j)) >= threshold) {
             correct += priority;
-            if (Math.abs(threshold - 1.43) < 0.01) {
+            if (Math.abs(threshold - 1.4) < 0.01) {
               System.out
                   .println("Clustered: " + words.get(i) + ":" + words.get(j));
             }
           } else {
-            if (Math.abs(threshold - 1.43) < 0.01) {
+            if (Math.abs(threshold - 1.4) < 0.01) {
               System.out.println(
                   "Didn't cluster: " + words.get(i) + ":" + words.get(j));
             }

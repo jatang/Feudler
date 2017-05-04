@@ -1,0 +1,251 @@
+Didn't cluster: hunt:get its food
+Clustered: old:how old
+Didn't cluster: hot pepper:ghost pepper
+Didn't cluster: have social media:have a instagram
+Clustered: meals:lunch
+Clustered: meals:breakfast
+Clustered: meals:dinner
+Clustered: lunch:breakfast
+Clustered: lunch:dinner
+Clustered: breakfast:dinner
+Didn't cluster: braces:retainers
+Didn't cluster: braces:invisalign
+Didn't cluster: retainers:invisalign
+Clustered: sleep:slumber
+Didn't cluster: have a baby:give birth
+Didn't cluster: have a baby:get pregnant
+Clustered: have a baby:pregnant
+Clustered: give birth:get pregnant
+Didn't cluster: give birth:pregnant
+Clustered: get pregnant:pregnant
+Didn't cluster: on my test:on the gre
+Didn't cluster: on my test:on the act
+Didn't cluster: on the gre:on the act
+Clustered: in french:in spanish
+Clustered: vodka:alcohol
+Clustered: vodka:rum
+Clustered: vodka:liquor
+Didn't cluster: alcohol:rum
+Clustered: alcohol:liquor
+Clustered: rum:liquor
+Clustered: tv:television
+Didn't cluster: hiv:aids
+Didn't cluster: on an airplane:on carry on
+Didn't cluster: explode:pop multiple times
+Clustered: an animal:a mammal
+Clustered: lick you:lick
+Clustered: peanut butter:butter
+Didn't cluster: good for dogs:good for you
+Didn't cluster: good for dogs:good for your hair
+Didn't cluster: good for you:good for your hair
+Didn't cluster: wolverine:wolverine how dare he
+Didn't cluster: worms:ringworm
+Clustered: potato:vegetable
+Clustered: meals:food
+Didn't cluster: move:run
+Didn't cluster: move:walk
+Clustered: run:walk
+Clustered: sound:noise
+Didn't cluster: sleep:rest
+Clustered: a cat:a feline
+Didn't cluster: president do:executive branch do
+Clustered: wardrobe:closet
+Clustered: death:dead
+Clustered: sick:ill
+Clustered: betrothed:married
+Clustered: while on antibiotics:on antibiotics
+Didn't cluster: on paleo:on a diet
+Didn't cluster: sad:blue
+Didn't cluster: cute:hot
+Didn't cluster: without a period:the day before your period
+Clustered: without a period:while on period
+Clustered: without a period:before your period
+Didn't cluster: without a period:right after your period
+Clustered: the day before your period:while on period
+Clustered: the day before your period:before your period
+Didn't cluster: the day before your period:right after your period
+Clustered: while on period:before your period
+Didn't cluster: while on period:right after your period
+Didn't cluster: before your period:right after your period
+Didn't cluster: before giving blood:before donating blood
+Clustered: a game gif:a game
+Didn't cluster: a game gif:a game meme
+Didn't cluster: a game:a game meme
+Didn't cluster: fast:fasting
+Clustered: a game:a fun game
+Didn't cluster: luigi:mario
+Didn't cluster: candy smash:candy crush
+Didn't cluster: clinging:clingy
+Clustered: clinging:cling
+Didn't cluster: clingy:cling
+Didn't cluster: kind:affectionate
+Clustered: kind:nice
+Didn't cluster: affectionate:nice
+Clustered: skinny:thin
+Clustered: weird:crazy
+Didn't cluster: open a banana:peel a banana
+Clustered: sound:noise
+Clustered: sound:sounding
+Didn't cluster: noise:sounding
+Didn't cluster: on venus:on neptune
+Clustered: on venus:on jupiter
+Didn't cluster: on venus:on mars
+Didn't cluster: on neptune:on jupiter
+Didn't cluster: on neptune:on mars
+Didn't cluster: on jupiter:on mars
+Clustered: for eternity:forever
+Clustered: automobile:car
+Clustered: automobile:vehicle
+Clustered: car:vehicle
+Didn't cluster: the car moved:the automobile drove away
+Clustered: you mean:you mean lyrics
+Clustered: good:good for you
+Clustered: have tatoos:tats
+Didn't cluster: cards:solitaire
+Clustered: everyone:everything
+Clustered: dying:dead
+Clustered: medication:antibiotics
+Didn't cluster: person:human
+Clustered: thinning:thin
+Didn't cluster: feel tired:sleepy
+Clustered: itchy:itch
+Didn't cluster: never leave:leave scars
+Didn't cluster: fear:brains enjoy fear
+Didn't cluster: hello neighbor:hello world
+Clustered: dreams mean:mean
+Clustered: hitler die:erin moran die
+Clustered: dreams mean:you mean
+Didn't cluster: ladybugs eat:deer eat
+Didn't cluster: dead:short
+Didn't cluster: tie a tie:draw
+Didn't cluster: get a passport:get married
+Didn't cluster: insurance go up:die
+Didn't cluster: know:live
+Didn't cluster: see:find my iphone
+Didn't cluster: live:go home
+0.17123287671232876
+Didn't cluster: hunt:get its food
+Clustered: old:how old
+Didn't cluster: hot pepper:ghost pepper
+Didn't cluster: have social media:have a instagram
+Clustered: meals:lunch
+Clustered: meals:breakfast
+Clustered: meals:dinner
+Clustered: lunch:breakfast
+Clustered: lunch:dinner
+Clustered: breakfast:dinner
+Didn't cluster: braces:retainers
+Didn't cluster: braces:invisalign
+Didn't cluster: retainers:invisalign
+Clustered: sleep:slumber
+Didn't cluster: have a baby:give birth
+Didn't cluster: have a baby:get pregnant
+Clustered: have a baby:pregnant
+Clustered: give birth:get pregnant
+Didn't cluster: give birth:pregnant
+Didn't cluster: get pregnant:pregnant
+Didn't cluster: on my test:on the gre
+Didn't cluster: on my test:on the act
+Didn't cluster: on the gre:on the act
+Clustered: in french:in spanish
+Clustered: vodka:alcohol
+Clustered: vodka:rum
+Clustered: vodka:liquor
+Didn't cluster: alcohol:rum
+Clustered: alcohol:liquor
+Clustered: rum:liquor
+Clustered: tv:television
+Didn't cluster: hiv:aids
+Didn't cluster: on an airplane:on carry on
+Didn't cluster: explode:pop multiple times
+Clustered: an animal:a mammal
+Clustered: lick you:lick
+Clustered: peanut butter:butter
+Didn't cluster: good for dogs:good for you
+Didn't cluster: good for dogs:good for your hair
+Didn't cluster: good for you:good for your hair
+Didn't cluster: wolverine:wolverine how dare he
+Didn't cluster: worms:ringworm
+Clustered: potato:vegetable
+Clustered: meals:food
+Didn't cluster: move:run
+Didn't cluster: move:walk
+Clustered: run:walk
+Clustered: sound:noise
+Didn't cluster: sleep:rest
+Clustered: a cat:a feline
+Didn't cluster: president do:executive branch do
+Clustered: wardrobe:closet
+Clustered: death:dead
+Clustered: sick:ill
+Clustered: betrothed:married
+Clustered: while on antibiotics:on antibiotics
+Didn't cluster: on paleo:on a diet
+Didn't cluster: sad:blue
+Didn't cluster: cute:hot
+Didn't cluster: without a period:the day before your period
+Clustered: without a period:while on period
+Clustered: without a period:before your period
+Didn't cluster: without a period:right after your period
+Clustered: the day before your period:while on period
+Clustered: the day before your period:before your period
+Didn't cluster: the day before your period:right after your period
+Clustered: while on period:before your period
+Didn't cluster: while on period:right after your period
+Didn't cluster: before your period:right after your period
+Didn't cluster: before giving blood:before donating blood
+Clustered: a game gif:a game
+Didn't cluster: a game gif:a game meme
+Didn't cluster: a game:a game meme
+Didn't cluster: fast:fasting
+Clustered: a game:a fun game
+Didn't cluster: luigi:mario
+Didn't cluster: candy smash:candy crush
+Didn't cluster: clinging:clingy
+Clustered: clinging:cling
+Didn't cluster: clingy:cling
+Didn't cluster: kind:affectionate
+Clustered: kind:nice
+Didn't cluster: affectionate:nice
+Clustered: skinny:thin
+Clustered: weird:crazy
+Didn't cluster: open a banana:peel a banana
+Clustered: sound:noise
+Clustered: sound:sounding
+Didn't cluster: noise:sounding
+Didn't cluster: on venus:on neptune
+Clustered: on venus:on jupiter
+Didn't cluster: on venus:on mars
+Didn't cluster: on neptune:on jupiter
+Didn't cluster: on neptune:on mars
+Didn't cluster: on jupiter:on mars
+Clustered: for eternity:forever
+Clustered: automobile:car
+Clustered: automobile:vehicle
+Clustered: car:vehicle
+Didn't cluster: the car moved:the automobile drove away
+Clustered: you mean:you mean lyrics
+Clustered: good:good for you
+Clustered: have tatoos:tats
+Didn't cluster: cards:solitaire
+Clustered: everyone:everything
+Clustered: dying:dead
+Clustered: medication:antibiotics
+Didn't cluster: person:human
+Clustered: thinning:thin
+Didn't cluster: feel tired:sleepy
+Clustered: itchy:itch
+Didn't cluster: never leave:leave scars
+Didn't cluster: fear:brains enjoy fear
+Didn't cluster: hello neighbor:hello world
+Clustered: dreams mean:mean
+Clustered: hitler die:erin moran die
+Clustered: dreams mean:you mean
+Didn't cluster: ladybugs eat:deer eat
+Didn't cluster: dead:short
+Didn't cluster: tie a tie:draw
+Didn't cluster: get a passport:get married
+Didn't cluster: insurance go up:die
+Didn't cluster: know:live
+Didn't cluster: see:find my iphone
+Didn't cluster: live:go home

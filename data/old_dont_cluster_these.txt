@@ -1,8 +1,20 @@
+0.6
+bread
+butter
+-
+5.0
+live
+do cats live
+-
 3.0
 leave scars
 never leave
 -
-3.0
+1.0
+animals
+animals hibernate
+-
+1.0
 fear
 brains enjoy fear
 -
@@ -14,9 +26,29 @@ hello neighbor
 mean
 dreams mean
 -
+2.0
+emojis nice
+emojis mean
+-
 10.0
 erin moran die
 hitler die
+-
+10.0
+sense
+sensitive
+-
+1.0
+carnivore
+mammal
+-
+2.0
+dog
+smarter than a dog
+-
+0.6
+animal
+mammal
 -
 10.0
 dreams mean
@@ -53,4 +85,8 @@ find my iphone
 10.0
 live
 go home
+-
+2.0
+feel sick
+feel tired
 -

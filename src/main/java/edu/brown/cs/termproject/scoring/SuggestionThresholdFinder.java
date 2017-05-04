@@ -17,6 +17,28 @@ import org.apache.commons.lang3.tuple.Pair;
  */
 final class SuggestionThresholdFinder {
 
+  public static void main(String[] args) {
+    System.out.println(getOptimalThreshold("data/cluster_these.txt",
+        "data/old_dont_cluster_these.txt"));
+  }
+
+  static void printSimilarities(String pathToGroups) {
+
+    List<Pair<Double, Set<Suggestion>>> groups = makeGroups(pathToGroups);
+
+    for (Pair<Double, Set<Suggestion>> group : groups) {
+      List<Suggestion> words = new ArrayList<>(group.getRight());
+
+      for (int i = 0; i < words.size(); i++) {
+        for (int j = i + 1; j < words.size(); j++) {
+          System.out.println(
+              words.get(i).getResponse() + "/" + words.get(j).getResponse()
+                  + ": " + words.get(i).similarity(words.get(j)));
+        }
+      }
+    }
+  }
+
   /**
    * Gets the best threshold for similarity, as a value between 0 and 1.
    *
@@ -36,21 +58,22 @@ final class SuggestionThresholdFinder {
     List<Pair<Double, Set<Suggestion>>> badGroups = makeGroups(
         pathToDontCluster);
 
-    double totalWeights = 0;
-    double thresholdTimesWeights = 0;
+    // threshold, score
+    Pair<Double, Double> best = Pair.of(0.0, 0.0);
 
     for (double threshold = 0; threshold <= 1.0; threshold += 0.01) {
-      double goodAccuracy = getAccuracy(goodGroups, threshold);
-      double badAccuracy = getAccuracy(badGroups, threshold);
-      double score = (goodAccuracy + (1 - badAccuracy)) / 2;
+      double good = getAccuracy(goodGroups, threshold);
+      double bad = getAccuracy(badGroups, threshold);
+      double score = (good + (1 - bad)) / 2;
 
-      System.out.println(goodAccuracy);
+      // System.out.println(good);
 
-      totalWeights += score;
-      thresholdTimesWeights += (score * threshold);
+      if (score > best.getRight()) {
+        best = Pair.of(threshold, score);
+      }
     }
 
-    return Pair.of(thresholdTimesWeights / totalWeights, 0.0);
+    return best;
   }
 
   /*

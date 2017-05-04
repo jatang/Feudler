@@ -335,7 +335,7 @@ public class Game {
 
             update.setInt(1, score);
             update.setInt(2, suggestionId);
-            update.executeQuery();
+            update.executeUpdate();
           }
           update.close();
 
@@ -348,7 +348,7 @@ public class Game {
             insert.setString(1, text);
             insert.setInt(2, id);
             insert.setInt(3, score);
-            insert.executeQuery();
+            insert.executeUpdate();
           }
           insert.close();
 

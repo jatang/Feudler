@@ -2,7 +2,7 @@
 Todo Scoring:
 	1. LED of 1 on tokenize, only use words when there's only one match.
 	2. Make sure newExistingSuggestionClustering() is being used.
-
+	3. Remove vocab from Word2VecModel? (maybe need it for LED).
 	
 Bad Word2Vec results:
 death/dying: 0.470971

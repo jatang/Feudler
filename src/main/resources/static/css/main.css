@@ -3,21 +3,21 @@
 }
 
 .logo-text span {
-	font-family: Verdana, sans-serif;
+	font-family: Futura, sans-serif;
 	font-size: 64px;
-	color: blue;
+	color: #4285f4;
 }
 
 .logo-text span:nth-child(4n+2) {
-	color: red;
+	color: #EA4335
 }
 
 .logo-text span:nth-child(4n+3) {
-	color: orange;
+	color: #FBBC0F;
 }
 
 .logo-text span:nth-child(4n+0) {
-	color: green;
+	color: #34A853;
 }
 
 .settings-box {

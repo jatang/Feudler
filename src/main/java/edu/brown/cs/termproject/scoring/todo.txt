@@ -9,3 +9,6 @@ death/dying: 0.470971
 human/person: 0.299469
 medication/antibiotics: 0.544573
 wet/watery: 0.400615
+draw/tie: 0.313729 -> listed as a synonym
+dead/die: 0.467538
+thin/thinning: 0.441996

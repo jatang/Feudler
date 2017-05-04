@@ -1,8 +1,25 @@
 package edu.brown.cs.termproject.game;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
+import edu.brown.cs.termproject.networking.User;
+import edu.brown.cs.termproject.queryResponses.QueryResponses;
+import edu.brown.cs.termproject.scoring.Clustering;
+import edu.brown.cs.termproject.scoring.Suggestion;
+import edu.brown.cs.termproject.scoring.Word2VecModel;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -11,13 +28,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
-
-import com.google.common.base.Optional;
-
-import edu.brown.cs.termproject.networking.User;
-import edu.brown.cs.termproject.queryResponses.QueryResponses;
-import edu.brown.cs.termproject.scoring.Suggestion;
-import edu.brown.cs.termproject.scoring.Word2VecModel;
 
 /**
  * A class representing an individual game on the server (either single or
@@ -34,6 +44,7 @@ public class Game {
 
   private final List<QueryResponses> queries;
   private Set<Suggestion> alreadyGuessed;
+  private Multimap<Integer, String> guesses;
   // Mode
   // Category
 
@@ -45,8 +56,9 @@ public class Game {
    *          of the Game.
    */
   public Game(int maxPlayers, List<QueryResponses> queries /* Settings */) {
-	this.maxPlayers = maxPlayers;
+    this.maxPlayers = maxPlayers;
     this.queries = queries;
+    this.guesses = HashMultimap.create();
   }
 
   /**
@@ -61,8 +73,8 @@ public class Game {
    */
   public Game(int maxPlayers, List<User> users, List<QueryResponses> queries
   /* Settings */) {
-	this.maxPlayers = maxPlayers;
-	
+    this.maxPlayers = maxPlayers;
+
     for (User user : users) {
       if (playerMap.size() >= maxPlayers) {
         break;
@@ -71,6 +83,7 @@ public class Game {
     }
 
     this.queries = queries;
+    this.guesses = HashMultimap.create();
   }
 
   /**
@@ -85,65 +98,66 @@ public class Game {
     }
     return queries.get(currRound);
   }
-  
+
   /**
    * Gets the current query from the Game if available.
    *
-   * @return Returns a String representing the current query for
-   *         the round.
+   * @return Returns a String representing the current query for the round.
    */
   public synchronized String getCurrentQuery() {
-	  QueryResponses curr = getCurrentQueryResponses();
-	  if(curr == null) {
-		  return "";
-	  }
-	  return curr.getQuery();
+    QueryResponses curr = getCurrentQueryResponses();
+    if (curr == null) {
+      return "";
+    }
+    return curr.getQuery();
   }
-  
+
   public synchronized List<String> getCurrentHints() {
-	  QueryResponses curr = getCurrentQueryResponses();
-	  if(curr == null) {
-		  return Collections.emptyList();
-	  }
-	  
-	  Set<String> stopwords = Word2VecModel.model.getStopwords();
-	  
-	  List<String> res = new ArrayList<>();
-	  for(Suggestion sugg : curr.getResponses().asList()) {
-		  Iterator<String> words = Arrays.asList(sugg.getResponse().split("\\s+")).iterator();
-		  
-		  String word;
-		  StringBuilder sb = new StringBuilder();
-		  
-		  while(words.hasNext()) {
-			  word = words.next();
-			  if(stopwords.contains(word)) {
-				  sb.append(word);
-			  } else {
-				  sb.append(StringUtils.repeat("_", word.length()));
-			  }
-			  
-			  if(words.hasNext()) {
-				  sb.append(" ");
-			  }
-		  }
-		  res.add(sb.toString());
-	  }
-	  
-	  return res;
+    QueryResponses curr = getCurrentQueryResponses();
+    if (curr == null) {
+      return Collections.emptyList();
+    }
+
+    Set<String> stopwords = Word2VecModel.model.getStopwords();
+
+    List<String> res = new ArrayList<>();
+    for (Suggestion sugg : curr.getResponses().asList()) {
+      Iterator<String> words = Arrays.asList(sugg.getResponse().split("\\s+"))
+          .iterator();
+
+      String word;
+      StringBuilder sb = new StringBuilder();
+
+      while (words.hasNext()) {
+        word = words.next();
+        if (stopwords.contains(word)) {
+          sb.append(word);
+        } else {
+          sb.append(StringUtils.repeat("_", word.length()));
+        }
+
+        if (words.hasNext()) {
+          sb.append(" ");
+        }
+      }
+      res.add(sb.toString());
+    }
+
+    return res;
   }
-  
+
   /**
    * Gets the current number of responses for the current query.
    *
-   * @return Returns an int representing the number of responses for the current query.
+   * @return Returns an int representing the number of responses for the current
+   *         query.
    */
   public synchronized int getCurrentNumResponses() {
-	  QueryResponses curr = getCurrentQueryResponses();
-	  if(curr == null) {
-		  return 0;
-	  }
-	  return curr.getResponses().size();
+    QueryResponses curr = getCurrentQueryResponses();
+    if (curr == null) {
+      return 0;
+    }
+    return curr.getResponses().size();
   }
 
   /**
@@ -218,10 +232,12 @@ public class Game {
         return Optional.absent();
       }
 
-      // TODO Save guess
+      QueryResponses currentQuery = queries.get(currRound);
 
-      Optional<Suggestion> res =
-          queries.get(currRound).getResponses().clusterOf(guess);
+      // Save guess
+      guesses.put(currentQuery.getId(), guess);
+
+      Optional<Suggestion> res = currentQuery.getResponses().clusterOf(guess);
       if (res.isPresent()) {
         Suggestion closest = res.get();
         if (!alreadyGuessed.contains(closest)) {
@@ -239,7 +255,120 @@ public class Game {
    * Ends the Game and saves all data collected during the Game.
    */
   public synchronized void endGame() {
-    // TODO Save all data
+    System.out.println("Ending game.");
+
+    if (guesses.isEmpty()) {
+      return;
+    }
+
+    // Note: This code is self-contained. All this does is take guesses and
+    // merge them with the guesses in the database. This does not alter any
+    // values in memory.
+
+    // 1. Open connection to database.
+    try {
+      Class.forName("org.sqlite.JDBC");
+      String urlToDb = "jdbc:sqlite:data/gFeud.sqlite3";
+
+      Connection conn = DriverManager.getConnection(urlToDb);
+      Statement stat = conn.createStatement();
+      stat.executeUpdate("PRAGMA foreign_keys = ON;");
+      stat.close();
+
+      PreparedStatement getStoredGuesses = conn.prepareStatement(
+          "select ID, answer, score from guesses where queryID=?;");
+
+      System.out.println("Going through ids.");
+      for (Integer id : guesses.keySet()) {
+        System.out.println("Id of " + id);
+
+        getStoredGuesses.setInt(1, id);
+        try (ResultSet rs = getStoredGuesses.executeQuery()) {
+
+          // 2. Make a clustering out of the current guesses in the database.
+          List<Suggestion> storedGuesses = new ArrayList<>();
+          Map<Suggestion, Integer> suggestionIds = new HashMap<>();
+          while (rs.next()) {
+            int suggestionId = rs.getInt(1);
+            String text = rs.getString(2);
+            int score = rs.getInt(3);
+            Suggestion suggestion = new Suggestion(
+                Word2VecModel.model.tokenize(text), text, score);
+            suggestionIds.put(suggestion, suggestionId);
+            storedGuesses.add(suggestion);
+          }
+          Clustering<Suggestion> clustering = Clustering
+              .newExistingSuggestionClustering(storedGuesses);
+
+          // The suggestion whose scores have been modified.
+          // Includes the newly made suggestions.
+          Set<Suggestion> modifiedScores = new HashSet<>();
+          Set<Suggestion> newScores = new HashSet<>();
+
+          // 3. Add new guesses to clustering.
+          for (String guess : guesses.get(id)) {
+            Optional<Suggestion> cluster = clustering.clusterOf(guess);
+
+            // Don't need to call add. Wouldn't do anything.
+            if (cluster.isPresent()) {
+              cluster.get().setScore(cluster.get().getScore() + 1);
+              if (!newScores.contains(cluster.get())) {
+                modifiedScores.add(cluster.get());
+              }
+            } else {
+              // Need to call add here to create a new cluster in the
+              // clustering.
+              Optional<Suggestion> newCluster = clustering.add(guess);
+              if (newCluster.isPresent()) {
+                newCluster.get().setScore(1);
+                newScores.add(newCluster.get());
+              } // else do nothing, the guess was just stopwords
+            }
+          }
+
+          // 4. Update the changes in the database.
+          PreparedStatement update = conn
+              .prepareStatement("update guesses set score=? where ID=?;");
+          for (Suggestion modified : modifiedScores) {
+            int suggestionId = suggestionIds.get(modified);
+            int score = modified.getScore();
+
+            update.setInt(1, score);
+            update.setInt(2, suggestionId);
+            update.executeQuery();
+          }
+          update.close();
+
+          PreparedStatement insert = conn.prepareStatement(
+              "insert into guesses (answer, queryID, score) values (?, ?, ?)");
+          for (Suggestion newSuggestion : newScores) {
+            String text = newSuggestion.getResponse();
+            int score = newSuggestion.getScore();
+
+            insert.setString(1, text);
+            insert.setInt(2, id);
+            insert.setInt(3, score);
+            insert.executeQuery();
+          }
+          insert.close();
+
+          rs.close();
+        } catch (SQLException ex) {
+          ex.printStackTrace();
+        }
+      }
+      getStoredGuesses.close();
+
+      // 5. Set guesses to an empty set (in case this gets called multiple
+      // times?)
+      guesses = HashMultimap.create();
+
+    } catch (ClassNotFoundException ex) {
+      throw new IllegalArgumentException(ex.getMessage());
+    } catch (SQLException ex) {
+      throw new RuntimeException(ex);
+    }
+
   }
 
   /**

@@ -70,6 +70,12 @@ public class Clustering<T extends Cluster> {
         new SuggestionFactory());
   }
 
+  public static Clustering<Suggestion> newExistingSuggestionClustering(
+      List<Suggestion> suggestions) {
+    return new Clustering<Suggestion>(suggestions, Word2VecModel.model,
+        new SuggestionFactory());
+  }
+
   /**
    * Creates a clustering out of the pre-existing clusters. Used when adding a
    * guess to the database.

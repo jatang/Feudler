@@ -57,7 +57,9 @@ public class DBConnector {
 
   /**
    * Checks if the database contains the given query.
-   * @param query - the query to check for the presence of
+   * 
+   * @param query
+   *          - the query to check for the presence of
    * @return - boolean corresponding to whether or not the query is contained
    */
   public boolean containsQuery(String query) {
@@ -103,12 +105,13 @@ public class DBConnector {
           "SELECT answer FROM answers WHERE queryID = ? ORDER BY score;");
       resPrep.setInt(1, qID);
       ResultSet resRs = resPrep.executeQuery();
-      
+
       while (resRs.next()) {
         responses.add(resRs.getString(1));
       }
       resPrep.close();
-      queries.add(new QueryResponses(query, Clustering.newSuggestionClustering(responses, Word2VecModel.model)));
+      queries.add(new QueryResponses(qID, query,
+          Clustering.newSuggestionClustering(responses, Word2VecModel.model)));
     }
     prep.close();
     // ResultSets closed when you close their prep;
@@ -120,10 +123,13 @@ public class DBConnector {
    * assumes that the QueryResponses is valid. Please check that the minimum
    * number of responses is present before using this function and that query is
    * not null (or we can add that to this function later).
-   * 
+   *
    * NOTE: The database currently specifies that queries are unique. If you're
    * trying to replace a query with new results, you should use an update
    * function, or delete then insert.
+   *
+   * Also note: The id of the queryresponse is not used here, and we expect it
+   * to be zero.
    * 
    * @param qr
    *          - A QueryResponses to add to the database

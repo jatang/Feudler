@@ -118,4 +118,12 @@ public class Suggestion implements Cluster {
   public List<WordVector> getVectors() {
     return vectors;
   }
+
+  /**
+   * Used to alter the suggestions' scores in meta mode. Should not be used for
+   * anything else.
+   */
+  public void setScore(int newScore) {
+    score = newScore;
+  }
 }

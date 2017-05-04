@@ -49,7 +49,7 @@ public class qGenerator {
       return false;
     }
     // building our QR to put into the database's insertQuery method
-    QueryResponses qr = new QueryResponses(query, suggs);
+    QueryResponses qr = new QueryResponses(0, query, suggs);
 
     try {
       db.insertQuery(qr);

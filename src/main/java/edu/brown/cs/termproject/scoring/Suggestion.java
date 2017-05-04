@@ -14,7 +14,7 @@ import java.util.Objects;
 public class Suggestion implements Cluster {
 
   // Test the hyperparameter with different values.
-  private static final double THRESHOLD = 0.43;
+  private static final double THRESHOLD = 0.40;
 
   private List<WordVector> vectors;
   private String originalPhrase;
@@ -46,8 +46,6 @@ public class Suggestion implements Cluster {
 
   @Override
   public double similarity(List<WordVector> otherSuggestion) {
-    // Dividing by 2 is redundant but it keeps the scaling correct (max possible
-    // is 1, min is -1).
     return ((avgSimilarity(vectors, otherSuggestion) * (vectors.size()))
         + (avgSimilarity(otherSuggestion, vectors) * (otherSuggestion.size())))
         / (vectors.size() + otherSuggestion.size());

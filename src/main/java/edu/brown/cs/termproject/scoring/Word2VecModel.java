@@ -37,9 +37,7 @@ public class Word2VecModel implements AutoCloseable {
   private ImmutableSet<String> vocabulary;
   private ConcurrentMap<String, WordVector> cache;
   private Connection embeddingConn;
-  private Connection similarConn;
   private PreparedStatement embeddingStatement;
-  private PreparedStatement similarStatement;
   private ImmutableSet<String> stopwords;
 
   /**
@@ -71,9 +69,6 @@ public class Word2VecModel implements AutoCloseable {
       embeddingConn = DriverManager.getConnection(urlToDb);
       embeddingStatement = embeddingConn
           .prepareStatement("select vector from embeddings where word=?;");
-      similarConn = DriverManager.getConnection("jdbc:sqlite:" + similarPath);
-      similarStatement = similarConn.prepareStatement(
-          "select distinct word2 from similar where word1=?;");
 
       // Creates the word vocabulary.
       PreparedStatement allWordsStatement = embeddingConn
@@ -88,9 +83,6 @@ public class Word2VecModel implements AutoCloseable {
 
       embeddingStatement.setString(1, "a");
       embeddingStatement.executeQuery(); // Checks that word/vector are fields.
-
-      similarStatement.setString(1, "ate");
-      similarStatement.executeQuery(); // Checks that word/vector are fields.
 
       // Reads stopwords from file.
       Set<String> temporaryStopwords = new HashSet<>();
@@ -129,20 +121,10 @@ public class Word2VecModel implements AutoCloseable {
       embeddingStatement.setString(1, word);
       try (ResultSet rs = embeddingStatement.executeQuery()) {
         if (rs.next()) {
-          similarStatement.setString(1, word);
-          try (ResultSet similarWords = similarStatement.executeQuery()) {
-            Set<String> allSimilar = new HashSet<>();
-            while (similarWords.next()) {
-              allSimilar.add(similarWords.getString(1));
-            }
-            similarWords.close();
-
-            WordVector vector = new WordVector(word, rs.getString(1),
-                allSimilar);
-            cache.put(word, vector);
-            rs.close();
-            return vector;
-          }
+          WordVector vector = new WordVector(word, rs.getString(1));
+          cache.put(word, vector);
+          rs.close();
+          return vector;
         } else {
           return new WordVector(word);
         }

@@ -19,7 +19,7 @@ final class SuggestionThresholdFinder {
 
   public static void main(String[] args) {
     System.out.println(getOptimalThreshold("data/cluster_these.txt",
-        "data/old_dont_cluster_these.txt"));
+        "data/dont_cluster_these.txt"));
   }
 
   static void printSimilarities(String pathToGroups) {
@@ -66,7 +66,7 @@ final class SuggestionThresholdFinder {
       double bad = getAccuracy(badGroups, threshold);
       double score = (good + (1 - bad)) / 2;
 
-      // System.out.println(good);
+      System.out.println(bad);
 
       if (score > best.getRight()) {
         best = Pair.of(threshold, score);
@@ -128,12 +128,12 @@ final class SuggestionThresholdFinder {
         for (int j = i + 1; j < words.size(); j++) {
           if (words.get(i).similarity(words.get(j)) >= threshold) {
             correct += priority;
-            if (Math.abs(threshold - 2) < 0.01) {
+            if (Math.abs(threshold - 1.43) < 0.01) {
               System.out
                   .println("Clustered: " + words.get(i) + ":" + words.get(j));
             }
           } else {
-            if (Math.abs(threshold - 2) < 0.01) {
+            if (Math.abs(threshold - 1.43) < 0.01) {
               System.out.println(
                   "Didn't cluster: " + words.get(i) + ":" + words.get(j));
             }

@@ -12,3 +12,4 @@ wet/watery: 0.400615
 draw/tie: 0.313729 -> listed as a synonym
 dead/die: 0.467538
 thin/thinning: 0.441996
+bored/thirsty: 0.395349

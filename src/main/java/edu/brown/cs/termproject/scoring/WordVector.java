@@ -2,12 +2,9 @@ package edu.brown.cs.termproject.scoring;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Stores the word and word vector. This can calculate cosine similarity with
@@ -22,11 +19,6 @@ class WordVector {
   private Optional<ImmutableList<Double>> vector;
   private double magnitude;
   private String word;
-  private ImmutableSet<String> similar;
-
-  public WordVector(String word, String vectorString) {
-    this(word, vectorString, new HashSet<>());
-  }
 
   /**
    * Initializes the word vector using the input string. The string is formatted
@@ -34,12 +26,13 @@ class WordVector {
    * commas, no whitespaces anywhere. Doubles are represented in scientific
    * notation.
    *
+   * @param word
+   *          the word of the vector
    * @param vectorString
    *          the string representation of the vector.
    */
-  public WordVector(String word, String vectorString, Set<String> similar) {
-    this.word = word;
-    this.similar = ImmutableSet.copyOf(similar);
+  public WordVector(String word, String vectorString) {
+    this.word = word.toLowerCase();
 
     String[] parts = vectorString.split(",");
     List<Double> tempVector = new ArrayList<>();
@@ -74,7 +67,6 @@ class WordVector {
     this.magnitude = 0;
     this.vector = Optional.absent();
     this.word = word;
-    this.similar = ImmutableSet.of();
   }
 
   /**
@@ -86,11 +78,7 @@ class WordVector {
    * @return the cosine similarity, a double between -1 and 1
    */
   public double similarity(WordVector other) {
-    if (word.equals(other.getWord())) {
-      return 1.0;
-    }
-
-    if (similar.contains(other.getWord())) {
+    if (word.equalsIgnoreCase(other.getWord())) {
       return 1.0;
     }
 

@@ -66,15 +66,15 @@ public class SuggestionTest {
 
   @Test
   public void badTest() {
-    Suggestion su = new Suggestion(model.tokenize("get married"), "", 0);
-    Suggestion tu = new Suggestion(model.tokenize("get a passport"), "a", 0);
-    assertTrue(su.similarity(tu) < su.similarityThreshold());
+    // Suggestion su = new Suggestion(model.tokenize("lotr"), "", 0);
+    // Suggestion tu = new Suggestion(model.tokenize("batman"), "a", 0);
+    // System.out.println(su.similarity(tu));
+    // assertTrue(su.similarity(tu) < su.similarityThreshold());
   }
 
   @Test
   public void anotherBadTest() {
     // Suggestion su = new Suggestion(model.tokenize("see"), "", 0);
     // Suggestion tu = new Suggestion(model.tokenize("find my iphone"), "a", 0);
-    // System.out.println(su.similarity(tu));
   }
 }

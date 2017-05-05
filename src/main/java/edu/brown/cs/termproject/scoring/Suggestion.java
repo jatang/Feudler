@@ -28,7 +28,7 @@ public class Suggestion implements Cluster {
    */
   public Suggestion(List<WordVector> vectors, String phrase, int score) {
     this.vectors = ImmutableList.copyOf(vectors);
-    this.originalPhrase = phrase;
+    this.originalPhrase = phrase.toLowerCase();
     this.score = score;
   }
 

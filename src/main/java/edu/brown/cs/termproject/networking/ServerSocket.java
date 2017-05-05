@@ -27,8 +27,8 @@ import edu.brown.cs.termproject.scoring.Suggestion;
 public class ServerSocket {
   private static final Gson GSON = new Gson();
 
-  private static final Set<String> ROOM_IDS =
-      Collections.synchronizedSet(new HashSet<String>());
+  private static final Set<String> ROOM_IDS = Collections
+      .synchronizedSet(new HashSet<String>());
   private static final Map<String, Room> ROOMS = new ConcurrentHashMap<>();
   private static final String roomChars = "23456789abcdefghjklmnpqrstuvwxyz";
   private static final int MAX_ROOMS = 20;
@@ -49,8 +49,7 @@ public class ServerSocket {
   }
 
   private static enum MESSAGE_TYPE {
-    CONNECT, CREATE_ROOM, CUSTOM_QUERY, NEW_GAME, NEW_ROUND, ROUND_END,
-    UPDATE_TIME, USER_JOIN, USER_LEFT, USER_KICK, PLAYER_GUESS, USER_CHAT
+    CONNECT, CREATE_ROOM, CUSTOM_QUERY, NEW_GAME, NEW_ROUND, ROUND_END, UPDATE_TIME, USER_JOIN, USER_LEFT, USER_KICK, PLAYER_GUESS, USER_CHAT
   }
 
   private static final MESSAGE_TYPE[] MESSAGE_VALUES = MESSAGE_TYPE.values();
@@ -223,8 +222,7 @@ public class ServerSocket {
               updatePayload.addProperty("numResponses", 0);
             }
 
-            updateMessage.addProperty("type",
-                MESSAGE_TYPE.NEW_ROUND.ordinal());
+            updateMessage.addProperty("type", MESSAGE_TYPE.NEW_ROUND.ordinal());
             updateMessage.addProperty("payload", updatePayload.toString());
             updateMessageString = updateMessage.toString();
 
@@ -239,47 +237,9 @@ public class ServerSocket {
 
           // Check whether user requesting new round is owner. If so, end
           // current round in room. Otherwise do nothing.
+          roundEnd(payload, session, false);
+          // false because we only want this to work if the user is the host.
 
-          room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
-          if (room == null) {
-            return;
-          }
-
-          if (session.equals(room.getCreator()) && room.getGame() != null) {
-            Set<Suggestion> alreadyGuessed =
-                room.getGame().getGuessedSuggestions();
-            QueryResponses roundQuery = room.getGame().endRound();
-            if (roundQuery != null) {
-              updateMessage = new JsonObject();
-              updatePayload = new JsonObject();
-              JsonArray suggestions = new JsonArray();
-
-              for (Suggestion sugg : roundQuery.getResponses().asList()) {
-                if (!alreadyGuessed.contains(sugg)) {
-                  JsonObject suggestionData = new JsonObject();
-                  suggestionData.addProperty("suggestion", sugg.getResponse());
-                  suggestionData.addProperty("suggestionIndex",
-                      sugg.getScore());
-                  suggestionData.addProperty("score",
-                      (10 - sugg.getScore()) * 1000);
-
-                  suggestions.add(suggestionData);
-                }
-              }
-
-              updatePayload.addProperty("suggestions", suggestions.toString());
-
-              updateMessage.addProperty("type",
-                  MESSAGE_TYPE.ROUND_END.ordinal());
-              updateMessage.addProperty("payload", updatePayload.toString());
-              updateMessageString = updateMessage.toString();
-
-              // Send back response (round query) on NEW_ROUND.
-              for (Session sess : room.getUserSessions()) {
-                sess.getRemote().sendString(updateMessageString);
-              }
-            }
-          }
           break;
         case UPDATE_TIME:
           // Payload contains room link/id, time
@@ -306,8 +266,8 @@ public class ServerSocket {
 
           room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
           if (room != null) {
-            final boolean added =
-                room.addUser(session, payload.get("username").getAsString());
+            final boolean added = room.addUser(session,
+                payload.get("username").getAsString());
             final boolean gameInProgress = room.getGame() == null;
 
             if (added) {
@@ -479,6 +439,13 @@ public class ServerSocket {
             sess.getRemote().sendString(updateMessageString);
           }
 
+          // If everything has been guessed, end the round.
+          if (room.getGame().getGuessedSuggestions().size() == room.getGame()
+              .getCurrentNumResponses()) {
+            roundEnd(payload, session, true); // true because we want to force
+                                              // the round to end
+          }
+
           break;
         case USER_CHAT:
           // Payload contains room link/id, user message
@@ -505,8 +472,7 @@ public class ServerSocket {
           updatePayload.addProperty("message",
               payload.get("message").getAsString());
 
-          updateMessage.addProperty("type",
-              MESSAGE_TYPE.USER_CHAT.ordinal());
+          updateMessage.addProperty("type", MESSAGE_TYPE.USER_CHAT.ordinal());
           updateMessage.addProperty("payload", updatePayload.toString());
           updateMessageString = updateMessage.toString();
 
@@ -536,5 +502,48 @@ public class ServerSocket {
     }
 
     return null;
+  }
+
+  private void roundEnd(JsonObject payload, Session session,
+      boolean forceRoundEnd) throws IOException {
+    Room room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
+    if (room == null) {
+      return;
+    }
+
+    // If the host is calling round end, or it's being forced (because all
+    // answers were guessed already).
+    if ((session.equals(room.getCreator()) || forceRoundEnd)
+        && room.getGame() != null) {
+      Set<Suggestion> alreadyGuessed = room.getGame().getGuessedSuggestions();
+      QueryResponses roundQuery = room.getGame().endRound();
+      if (roundQuery != null) {
+        JsonObject updateMessage = new JsonObject();
+        JsonObject updatePayload = new JsonObject();
+        JsonArray suggestions = new JsonArray();
+
+        for (Suggestion sugg : roundQuery.getResponses().asList()) {
+          if (!alreadyGuessed.contains(sugg)) {
+            JsonObject suggestionData = new JsonObject();
+            suggestionData.addProperty("suggestion", sugg.getResponse());
+            suggestionData.addProperty("suggestionIndex", sugg.getScore());
+            suggestionData.addProperty("score", (10 - sugg.getScore()) * 1000);
+
+            suggestions.add(suggestionData);
+          }
+        }
+
+        updatePayload.addProperty("suggestions", suggestions.toString());
+
+        updateMessage.addProperty("type", MESSAGE_TYPE.ROUND_END.ordinal());
+        updateMessage.addProperty("payload", updatePayload.toString());
+        String updateMessageString = updateMessage.toString();
+
+        // Send back response (round query) on NEW_ROUND.
+        for (Session sess : room.getUserSessions()) {
+          sess.getRemote().sendString(updateMessageString);
+        }
+      }
+    }
   }
 }

@@ -14,3 +14,6 @@ married/son: ~0.4
 hiv/aids: 0.22283
 eat/sleep: 
 lotr/batman: 0.41
+
+Good results:
+cellulite/hair: 0.409

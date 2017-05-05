@@ -1,0 +1,14 @@
+
+Todo:
+    1. When the host leaves, redirect all players back to the home page.
+    2. Add a play again button at the end of multiplayer games.
+    3. Add more specific queries.
+    4. Custom queries.
+    5. If the round has ended, set the frontend timer to 0.
+    6. Displays answers to a new player who joined after the time was up.
+    7. nRandomQueries -> double check that this is truly random.
+
+If we have time:
+    1. Show stopwords.
+    2. Chat.
+    3. Remove duplicate queries in the same room.

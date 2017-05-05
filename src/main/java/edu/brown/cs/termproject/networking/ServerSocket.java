@@ -562,6 +562,7 @@ public class ServerSocket {
         String updateMessageString = updateMessage.toString();
 
         // Send back response (round query) on NEW_ROUND.
+        System.out.println(updateMessageString);
         for (Session sess : room.getUserSessions()) {
           sess.getRemote().sendString(updateMessageString);
         }

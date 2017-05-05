@@ -9,3 +9,7 @@ dead/die: 0.467538
 thin/thinning: 0.441996
 bored/thirsty: 0.395349
 vodka/kombucha: 0.416521
+beer/milk: 0.403793
+married/son: ~0.4
+hiv/aids: 0.22283
+eat/sleep: 

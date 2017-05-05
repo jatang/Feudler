@@ -102,6 +102,7 @@ public class Clustering<T extends Cluster> {
    */
   private Clustering(List<String> answers, ClusterFactory<T> factory,
       Word2VecModel model) {
+    System.out.println(answers);
     total = 0;
     this.clusters = new ArrayList<>();
     this.model = model;

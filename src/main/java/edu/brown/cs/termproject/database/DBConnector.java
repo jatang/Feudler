@@ -143,7 +143,7 @@ public class DBConnector {
       int qID = rs.getInt("ID");
       List<String> responses = new ArrayList<>();
       PreparedStatement resPrep = conn.prepareStatement(
-          "SELECT answer FROM guesses WHERE queryID = ? ORDER BY score DESC;");
+          "SELECT answer FROM guesses WHERE queryID = ? ORDER BY score DESC LIMIT 10;");
       resPrep.setInt(1, qID);
       ResultSet resRs = resPrep.executeQuery();
 

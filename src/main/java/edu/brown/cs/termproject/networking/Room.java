@@ -53,17 +53,17 @@ public class Room {
    * @return Returns a boolean representing success.
    */
   public synchronized boolean addUser(Session session, String username) {
-	  
-	if(userMap.size() < maxUsers) {
-	    userMap.put(session, new User(session, userMap.size(), username, false));
-	    User added = userMap.get(session);
-	    if(game != null && added != null && !added.isSpectating()) {
-	    	game.addPlayer(added);
-	    }
-	    return true;
-	 }
-	
-	return false;
+
+    if (userMap.size() < maxUsers) {
+      userMap.put(session, new User(session, userMap.size(), username, false));
+      User added = userMap.get(session);
+      if (game != null && added != null && !added.isSpectating()) {
+        game.addPlayer(added);
+      }
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -86,13 +86,13 @@ public class Room {
    *         be removed.
    */
   public boolean removeUser(Session session) {
-	  User remove = userMap.remove(session);
-    if(remove != null && game != null) {
-    	game.removePlayer(remove);
+    User remove = userMap.remove(session);
+    if (remove != null && game != null) {
+      game.removePlayer(remove);
     }
     return remove != null;
   }
-  
+
   /**
    * Gets a User from the Game based on an id.
    *
@@ -101,10 +101,10 @@ public class Room {
    * @return Returns a User with corresponding id.
    */
   public User getUser(int id) {
-    for(User user : userMap.values()) {
-    	if(user.getId() == id) {
-    		return user;
-    	}
+    for (User user : userMap.values()) {
+      if (user.getId() == id) {
+        return user;
+      }
     }
     return null;
   }
@@ -112,7 +112,8 @@ public class Room {
   /**
    * Creates a new Game for the Room.
    */
-  public synchronized void newGame(int rounds /* Settings */) {
+  public synchronized void newGame(int rounds, String mode,
+      List<QueryResponses> queries /* Settings */) {
     if (game != null) {
       game.endGame();
     }
@@ -125,8 +126,15 @@ public class Room {
     }
 
     try {
-      List<QueryResponses> queryResponses = new qGenerator().nRandomQrs(rounds);
-      game = new Game(maxUsers, playingUsers, queryResponses /* , Settings */);
+      if (rounds > queries.size()) {
+        if (mode.equals("standard")) {
+          queries.addAll(new qGenerator().nRandomQrs(rounds - queries.size()));
+        } else {
+          queries.addAll(new qGenerator().nRandomQrs(rounds - queries.size()));
+        }
+      }
+
+      game = new Game(maxUsers, playingUsers, queries /* , Settings */);
     } catch (SQLException e) {
       e.printStackTrace();
     }
@@ -150,11 +158,12 @@ public class Room {
   public Session getCreator() {
     return creator;
   }
-  
+
   /**
    * Gets all the Room users.
    *
-   * @return Returns a Collection of User representing all the Users in the Room.
+   * @return Returns a Collection of User representing all the Users in the
+   *         Room.
    */
   public Collection<User> getUsers() {
     return userMap.values();

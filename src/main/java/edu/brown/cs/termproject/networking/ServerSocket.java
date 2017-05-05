@@ -1,8 +1,10 @@
 package edu.brown.cs.termproject.networking;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -17,9 +19,11 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import com.google.common.base.Optional;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 
+import edu.brown.cs.termproject.queryGenerator.qGenerator;
 import edu.brown.cs.termproject.queryResponses.QueryResponses;
 import edu.brown.cs.termproject.scoring.Suggestion;
 
@@ -161,8 +165,10 @@ public class ServerSocket {
               MESSAGE_TYPE.CUSTOM_QUERY.ordinal());
           updateMessage.addProperty("payload", updatePayload.toString());
 
-          payload.addProperty("valid", false);
+          boolean valid = new qGenerator()
+              .validateQuery(payload.get("query").getAsString()) != null;
 
+          updatePayload.addProperty("valid", valid);
           // Send back response on CUSTOM_QUERY.
           session.getRemote().sendString(updateMessage.toString());
 
@@ -180,7 +186,23 @@ public class ServerSocket {
 
           if (session.equals(room.getCreator())) {
             JsonObject settings = payload.get("settings").getAsJsonObject();
-            room.newGame(settings.get("rounds").getAsInt());
+
+            List<QueryResponses> customQueries = new ArrayList<>();
+
+            if (payload.get("queries") != null) {
+              qGenerator generator = new qGenerator();
+              JsonArray custom = payload.get("queries").getAsJsonArray();
+
+              for (JsonElement query : custom.getAsJsonArray()) {
+                QueryResponses q = generator.validateQuery(query.getAsString());
+                if (q != null) {
+                  customQueries.add(q);
+                }
+              }
+            }
+
+            room.newGame(settings.get("rounds").getAsInt(),
+                settings.get("mode").getAsString(), customQueries);
 
             updateMessage = new JsonObject();
             updatePayload = new JsonObject();

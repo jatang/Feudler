@@ -5,7 +5,7 @@ import static org.junit.Assert.assertFalse;
 
 import com.google.common.collect.ImmutableList;
 
-import java.util.stream.Collectors;
+//import java.util.stream.Collectors;
 import org.junit.Test;
 
 public class ClusteringTest {
@@ -16,9 +16,9 @@ public class ClusteringTest {
   @Test
   public void basicTest() {
     // "another" is a stopword
-    Clustering<Suggestion> clustering = Clustering.newSuggestionClustering(
-        ImmutableList.of("test", "another test"), Word2VecModel.model);
-    // assertEquals(clustering.asList().stream()
+    // Clustering<Suggestion> clustering = Clustering.newSuggestionClustering(
+    // ImmutableList.of("test", "another test"), Word2VecModel.model);
+    // // assertEquals(clustering.asList().stream()
     // .map((Suggestion s) -> s.getResponse()).collect(Collectors.toList()),
     // ImmutableList.of("test"));
   }

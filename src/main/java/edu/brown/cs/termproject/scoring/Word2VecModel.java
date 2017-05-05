@@ -1,5 +1,6 @@
 package edu.brown.cs.termproject.scoring;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -114,6 +115,13 @@ public class Word2VecModel implements AutoCloseable {
     }
 
     if (!vocabulary.contains(word)) {
+      Optional<String> fixed = LedCorrector.fix(vocabulary, word);
+      if (fixed.isPresent()) {
+        assert (vocabulary.contains(fixed.get()));
+        return vectorOf(fixed.get());
+      }
+
+      // else give up and return a wordvector of just the word
       return new WordVector(word);
     }
 

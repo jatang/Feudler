@@ -31,6 +31,7 @@ public class ServerSocket {
       Collections.synchronizedSet(new HashSet<String>());
   private static final Map<String, Room> ROOMS = new ConcurrentHashMap<>();
   private static final String roomChars = "23456789abcdefghjklmnpqrstuvwxyz";
+  private static final int MAX_ROOMS = 20;
 
   private static String generateRoomId() {
     Random random = new Random();
@@ -67,42 +68,42 @@ public class ServerSocket {
   @OnWebSocketClose
   public void closed(Session session, int statusCode, String reason) {
 
-	  try {
-	    // Compose and send USER_LEFT message here if necessary
-	    for (Room room : ROOMS.values()) {
-	    	User user = room.getUser(session);
-	      if(room.removeUser(session)) {
-	    	  boolean roomClose = false;
-	    	  if(session.equals(room.getCreator())) {
-	    		  if(room.getGame() != null) {
-	    			  room.getGame().endGame();
-	    		  }
-	    		  ROOM_IDS.remove(room.getRoomId());
-	    		  ROOMS.remove(room.getRoomId());
-	    		  roomClose = true;
-	    	  }
-	    	  
-	    	  JsonObject updateMessage = new JsonObject();
-	    	  JsonObject updatePayload = new JsonObject();
-	    	  
-	    	  updatePayload.addProperty("userId", user.getId());
-	    	  updatePayload.addProperty("username", user.getUsername());
-	    	  updatePayload.addProperty("roomClose", roomClose);
-	    	  
-	    	  updateMessage.addProperty("type", MESSAGE_TYPE.USER_LEFT.ordinal());
-	          updateMessage.addProperty("payload", updatePayload.toString());
-	          String updateMessageString = updateMessage.toString();
-	
-	          // Send back response on USER_LEFT.
-	          for (Session sess : room.getUserSessions()) {
-	            sess.getRemote().sendString(updateMessageString);
-	          }
-	          break;
-	      }
-	    }
-	  } catch (Exception e) {
-		  System.out.println("ERROR: Unable to send USER_LEFT");
-	  }
+    try {
+      // Compose and send USER_LEFT message here if necessary
+      for (Room room : ROOMS.values()) {
+        User user = room.getUser(session);
+        if (room.removeUser(session)) {
+          boolean roomClose = false;
+          if (session.equals(room.getCreator())) {
+            if (room.getGame() != null) {
+              room.getGame().endGame();
+            }
+            ROOM_IDS.remove(room.getRoomId());
+            ROOMS.remove(room.getRoomId());
+            roomClose = true;
+          }
+
+          JsonObject updateMessage = new JsonObject();
+          JsonObject updatePayload = new JsonObject();
+
+          updatePayload.addProperty("userId", user.getId());
+          updatePayload.addProperty("username", user.getUsername());
+          updatePayload.addProperty("roomClose", roomClose);
+
+          updateMessage.addProperty("type", MESSAGE_TYPE.USER_LEFT.ordinal());
+          updateMessage.addProperty("payload", updatePayload.toString());
+          String updateMessageString = updateMessage.toString();
+
+          // Send back response on USER_LEFT.
+          for (Session sess : room.getUserSessions()) {
+            sess.getRemote().sendString(updateMessageString);
+          }
+          break;
+        }
+      }
+    } catch (Exception e) {
+      System.out.println("ERROR: Unable to send USER_LEFT");
+    }
   }
 
   @OnWebSocketMessage
@@ -130,13 +131,18 @@ public class ServerSocket {
           // Payload contains nothing
 
           room = createRoom(session, payload);
-          ROOM_IDS.add(room.getRoomId());
-          ROOMS.put(room.getRoomId(), room);
+          String roomId = "";
+          if (room != null) {
+            ROOM_IDS.add(room.getRoomId());
+            ROOMS.put(room.getRoomId(), room);
+
+            roomId = room.getRoomId();
+          }
 
           updateMessage = new JsonObject();
           updatePayload = new JsonObject();
 
-          updatePayload.addProperty("roomId", room.getRoomId());
+          updatePayload.addProperty("roomId", roomId);
 
           updateMessage.addProperty("type", MESSAGE_TYPE.CREATE_ROOM.ordinal());
           updateMessage.addProperty("payload", updatePayload.toString());
@@ -204,7 +210,7 @@ public class ServerSocket {
 
           if (session.equals(room.getCreator()) && room.getGame() != null) {
             QueryResponses roundQuery = room.getGame().newRound();
-            
+
             updateMessage = new JsonObject();
             updatePayload = new JsonObject();
 
@@ -240,8 +246,8 @@ public class ServerSocket {
           }
 
           if (session.equals(room.getCreator()) && room.getGame() != null) {
-        	  Set<Suggestion> alreadyGuessed =
-                      room.getGame().getGuessedSuggestions();
+            Set<Suggestion> alreadyGuessed =
+                room.getGame().getGuessedSuggestions();
             QueryResponses roundQuery = room.getGame().endRound();
             if (roundQuery != null) {
               updateMessage = new JsonObject();
@@ -276,50 +282,53 @@ public class ServerSocket {
           }
           break;
         case UPDATE_TIME:
-            // Payload contains room link/id, time
+          // Payload contains room link/id, time
 
-            // Check whether room id is valid and whether user is owner. If so,
-            // update the time
+          // Check whether room id is valid and whether user is owner. If so,
+          // update the time
 
-            room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
-            if (room == null) {
-              return;
-            }
+          room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
+          if (room == null) {
+            return;
+          }
 
-            if (session.equals(room.getCreator()) && room.getGame() != null) {
-              double time = payload.get("timeSeconds").getAsDouble();
+          if (session.equals(room.getCreator()) && room.getGame() != null) {
+            double time = payload.get("timeSeconds").getAsDouble();
 
-              room.getGame().setTime(time);
-            }
-            break;
+            room.getGame().setTime(time);
+          }
+          break;
         case USER_JOIN:
           // Payload contains room link/id, user username
 
           // Check whether room id is valid and is accepting users. If so, add
           // user to room.
-        	
+
           room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
-          if (room != null) {      	  
+          if (room != null) {
             final boolean added =
                 room.addUser(session, payload.get("username").getAsString());
             final boolean gameInProgress = room.getGame() == null;
 
             if (added) {
-            	User addedUser = room.getUser(session);
+              User addedUser = room.getUser(session);
               updateMessage = new JsonObject();
               updatePayload = new JsonObject();
 
               updatePayload.addProperty("userId", addedUser.getId());
               updatePayload.addProperty("username", addedUser.getUsername());
-              
-              if(gameInProgress) {
-            	  updatePayload.addProperty("score", 0);
-            	  updatePayload.addProperty("query", "");
-            	  updatePayload.addProperty("timeSeconds", 0);
+
+              if (gameInProgress) {
+                updatePayload.addProperty("score", 0);
+                updatePayload.addProperty("query", "");
+                updatePayload.addProperty("timeSeconds", 0);
               } else {
-            	  updatePayload.addProperty("score", room.getGame().getPlayerScore(addedUser));
-            	  updatePayload.addProperty("query", room.getGame().getCurrentQuery());
-            	  updatePayload.addProperty("timeSeconds", room.getGame().getTime());
+                updatePayload.addProperty("score",
+                    room.getGame().getPlayerScore(addedUser));
+                updatePayload.addProperty("query",
+                    room.getGame().getCurrentQuery());
+                updatePayload.addProperty("timeSeconds",
+                    room.getGame().getTime());
               }
 
               updateMessage.addProperty("type",
@@ -350,7 +359,8 @@ public class ServerSocket {
 
               JsonArray guessed = new JsonArray();
               if (room.getGame() != null) {
-            	  updatePayload.addProperty("numResponses", room.getGame().getCurrentNumResponses());
+                updatePayload.addProperty("numResponses",
+                    room.getGame().getCurrentNumResponses());
                 for (Suggestion sugg : room.getGame().getGuessedSuggestions()) {
                   JsonObject suggestionData = new JsonObject();
                   suggestionData.addProperty("suggestion", sugg.getResponse());
@@ -362,7 +372,7 @@ public class ServerSocket {
                   guessed.add(suggestionData);
                 }
               } else {
-            	  updatePayload.addProperty("numResponses", 0);
+                updatePayload.addProperty("numResponses", 0);
               }
 
               updatePayload.addProperty("users", users.toString());
@@ -389,28 +399,29 @@ public class ServerSocket {
 
           break;
         case USER_KICK:
-        	room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
-            if (room != null && session.equals(room.getCreator())) {
-            	
-            	User kickUser = room.getUser(payload.get("userId").getAsInt());
-            	if(kickUser != null) {
-            		updateMessage = new JsonObject();
-                    updatePayload = new JsonObject();
+          room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
+          if (room != null && session.equals(room.getCreator())) {
 
-                    updatePayload.addProperty("userId", kickUser.getId());
-                    updatePayload.addProperty("username", kickUser.getUsername());
+            User kickUser = room.getUser(payload.get("userId").getAsInt());
+            if (kickUser != null) {
+              updateMessage = new JsonObject();
+              updatePayload = new JsonObject();
 
-                    updateMessage.addProperty("type", MESSAGE_TYPE.USER_KICK.ordinal());
-                    updateMessage.addProperty("payload", updatePayload.toString());
-                    updateMessageString = updateMessage.toString();
+              updatePayload.addProperty("userId", kickUser.getId());
+              updatePayload.addProperty("username", kickUser.getUsername());
 
-                    // Send back response on USER_KICK.
-                    for (Session sess : room.getUserSessions()) {
-                      sess.getRemote().sendString(updateMessageString);
-                    }
-                    room.removeUser(kickUser.getSession());
-            	}
+              updateMessage.addProperty("type",
+                  MESSAGE_TYPE.USER_KICK.ordinal());
+              updateMessage.addProperty("payload", updatePayload.toString());
+              updateMessageString = updateMessage.toString();
+
+              // Send back response on USER_KICK.
+              for (Session sess : room.getUserSessions()) {
+                sess.getRemote().sendString(updateMessageString);
+              }
+              room.removeUser(kickUser.getSession());
             }
+          }
           break;
         case PLAYER_GUESS:
           // Payload contains room link/id, guess text
@@ -439,7 +450,7 @@ public class ServerSocket {
 
           if (res.isPresent()) {
             Suggestion sugg = res.get();
-            
+
             updatePayload.addProperty("suggestion", sugg.getResponse());
             updatePayload.addProperty("suggestionIndex", sugg.getScore());
             updatePayload.addProperty("score", (10 - sugg.getScore()) * 1000);
@@ -512,13 +523,18 @@ public class ServerSocket {
     }
   }
 
-  private Room createRoom(Session session, JsonObject payload) {
+  private synchronized Room createRoom(Session session, JsonObject payload) {
     // Settings include:
     // - Single Player / Multiplayer (w/ player limit)
     // - Mode: Google Feud, Meta Mode
     // - Number of Rounds
     // - (Category type)
 
-    return new Room(generateRoomId(), session, payload.get("maxUsers").getAsInt() /* ,Settings from payload */);
+    if (ROOMS.size() < MAX_ROOMS) {
+      return new Room(generateRoomId(), session,
+          payload.get("maxUsers").getAsInt() /* ,Settings from payload */);
+    }
+
+    return null;
   }
 }

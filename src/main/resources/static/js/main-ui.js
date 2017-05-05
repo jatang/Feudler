@@ -12,7 +12,7 @@ const PLAYER_GUESS = 10;
 const USER_CHAT = 11;
 
 const MAX_ROUNDS = 5;
-let game;
+let room;
 
 // Views
 let $home;
@@ -31,6 +31,8 @@ let $sliderRounds;
 let $nextRound;
 let $submit;
 // Display elements
+let $roomCodeField;
+let $scoreArea;
 let $score;
 let $timer;
 
@@ -40,42 +42,55 @@ let $dialog;
 
 let connection;
 
+
+
 $(document).ready(() => {
     connection = new Connection("ws://localhost:4567/connection");
     $home =$("#home");
     $settings = $("#settings").addClass("hide", 0);
     $custom = $("#custom").addClass("hide", 0);
     $playSingle = $("#play-single").addClass("hide", 0);
+
+    $scoreArea = $("#scoreArea").addClass("hide", 0);
     $singleScore = $("#singleplayerScore").addClass("hide", 0);
     $multiScore = $("#multiplayerScore").addClass("hide", 0);
 
+    $lobby = $("#lobby").addClass("hide", 0);
+    $waitingMessage = $("#waiting-message").addClass("hide", 0);
+    $roomCodeArea = $("#room-code-area");
+    $roomCodeField = $("#room-code-field");
+    $startFromLobby = $("#start-from-lobby").addClass("hide", 0).click(() => {
+        connection.sendNewGameMessage();
+        $startFromLobby.hide("fade");
+    });
+
     $nextRound = $("#next-round").addClass("hide", 0);
+
     $nextRound.click(() => connection.sendNewRoundMessage());
-
     $submit = $("#submit");
-    $submit.click(() => game.round.checkAnswer());
 
 
 
+    $submit.click(() => room.game.round.checkAnswer());
 // Sets up buttons.
     $("input[type='radio']").checkboxradio({
         icon: false
     });
     setUpButtons();
-    $(".search-button").button();
 
+    $(".search-button").button();
     $categoryAny = $("#category-any");
     $categoryCustom = $("#category-custom");
     $categoryScience = $("#category-science");
     $modeMeta = $("#mode-meta");
-    $modeStandard = $("#mode-standard");
     $score = $("#score");
+    $modeStandard = $("#mode-standard");
     $timer = $("#timer");
     $guess = $("#guess");
 
     $guess.keydown((event) => {
         if (event.keyCode == 13) {
-            game.round.checkAnswer();
+            room.game.round.checkAnswer();
         }
     });
 
@@ -125,7 +140,7 @@ $(document).ready(() => {
         //         $custom.show("drop", {direction: "right"});
         //     });
         // } else {
-        startGame();
+        connection.sendCreateMessage();
         // }
     });
 
@@ -210,7 +225,6 @@ $(document).ready(() => {
         $dialog.dialog( "open" );
     });
 });
-
 function validateJoin() {
     let valid = true;
     const $name = $("#name").removeClass( "ui-state-error" );
@@ -262,19 +276,6 @@ function reveal(answer, index, score, flagMissed) {
         $toUpdate.html(revealedContent);
         if (flagMissed) {
             $toUpdate.addClass("missed");
-        } else {
-            // TODO: remove once server can handle scoring
-            // if (!game.round.answersSeen.has(answer)) {
-            //     addPoints(score);
-            //     game.round.answersSeen.add(answer);
-            // }
-        }
-
-        if (game.round.answersSeen.size >= game.round.size) {
-            game.round.end();
-            if (game.hosting) {
-                connection.sendEndRound();
-            }
         }
     } else {
         console.log("Invalid index provided: " + index);
@@ -292,15 +293,8 @@ function setUpButtons() {
     });
 }
 
-// Is called when the play button is first clicked. Should construct a new
-// Round with a query appropriate to the user's chosen settings.
-function startGame() {
-    game = new Game(true, $("#player-type-multi")[0].checked, $sliderRounds.slider("value"), "", "");
-    game.configure();
-}
-
 function joinGame(roomId, username) {
-    game = new Game(false, true, null, roomId, username);
+    room = new Room(false, true, roomId, username);
     connection.sendJoinMessage();
 }
 
@@ -333,6 +327,25 @@ function updateMultiplayerScore(userId, username, score) {
     $multiScore.find($(`#usr${userId}`)).text(`${username} - ${score}`);
 }
 
+function removeMultiplayerScoreRow(userId) {
+    $multiScore.find($(`#usr${userId}`)).remove();
+}
+
+function startFrom(eltToHide) {
+    eltToHide.hide("fade", () => {
+        if (room.multiplayer) {
+            $lobby.show("fade");
+            if (room.hosting) {
+                $startFromLobby.show("fade");
+            } else {
+                $waitingMessage.show("fade");
+            }
+            $roomCodeField.text(room.id);
+        }
+        $scoreArea.show("fade");
+    });
+}
+
 class Countdown {
     constructor(initial) {
         this.initial = initial;
@@ -340,7 +353,7 @@ class Countdown {
 
     tick() {
         this.initial--;
-        if (game.multiplayer && game.hosting) {
+        if (room.multiplayer && room.hosting) {
             connection.sendUpdateTime(this.initial);
         }
         return this.initial;
@@ -370,8 +383,11 @@ class Connection {
                 case USER_JOIN:
                     connection.receiveJoinMessage(payload);
                     break;
+                case USER_LEFT:
+                    connection.receiveLeftMessage(payload);
+                    break;
                 case NEW_GAME:
-                    // Nothing needed.
+                    connection.receiveNewGameMessage();
                     break;
                 case NEW_ROUND:
                     connection.receiveNewRoundMessage(payload);
@@ -386,19 +402,6 @@ class Connection {
                     console.log("Unknown message type received: " + message.type);
             }
         };
-        // TODO: Remove when server side works
-        // this.answers = new Map([
-        //     ["subway", new Box(0, "subway", 100000)],
-        //     ["weigh", new Box(1, "weigh", 50000)],
-        //     ["play", new Box(2, "play", 20000)],
-        //     ["spray", new Box(3, "spray", 10000)],
-        //     ["pay", new Box(4, "pay", 5000)],
-        //     ["kyrie", new Box(5, "kyrie", 2000)],
-        //     ["pray", new Box(6, "pray", 1000)],
-        //     ["pompeii", new Box(7, "pompeii", 500)],
-        //     ["say", new Box(8, "say", 0)],
-        //     // ["say", new Box(9, "say", 0)]
-        // ]);
     }
 
     sendCreateMessage() {
@@ -409,29 +412,31 @@ class Connection {
             }
         };
         this.connection.send(JSON.stringify(message));
-        // message.roomId = 3;
-        // this.receiveCreateMessage(message)
     }
 
     receiveCreateMessage(payload) {
-        game.id = payload.roomId;
-        this.sendJoinMessage();
-        this.sendNewGameMessage();
-        this.sendNewRoundMessage();
+        if (payload.roomId === "") {
+            alert("The server is operating at maximum capacity. Try again later!");
+            window.location.replace("/");
+        } else {
+            room = new Room(true, $("#player-type-multi")[0].checked, payload.roomId, "Host");
+            this.sendJoinMessage();
+            if(!room.multiplayer) {
+                connection.sendNewGameMessage();
+            }
+        }
     }
 
     sendJoinMessage() {
         const message = {
             type: USER_JOIN,
             payload: {
-                roomId: game.id,
-                username: game.hosting ? "Host" : game.username
+                roomId: room.id,
+                username: room.hosting ? "Host" : room.username
             }
         };
         this.connection.send(JSON.stringify(message));
         console.log("join msg sent");
-        // message.userId = 5;
-        // this.receiveJoinMessage(message);
     }
 
     receiveJoinMessage(payload) {
@@ -442,23 +447,21 @@ class Connection {
             return;
         }
         // if user is the one joining game
-        if (game.userId === "") {
-            game.userId = payload.userId;
-            if (game.hosting) {
-                $settings.hide("fade", () => {
-                    $playSingle.show("fade");
-                });
+        if (room.userId === "") {
+            room.userId = payload.userId;
+            if (room.hosting) {
+                startFrom($settings);
             } else {
-                $home.hide("fade", () => {
-                    $playSingle.show("fade");
-                });
-                game.nextRound(payload.query, payload.numResponses, payload.timeSeconds);
-                JSON.parse(payload.guessed).forEach((elt) => {
-                    reveal(elt.response, elt.responseIndex, elt.score, false);
-                });
+                startFrom($home);
+                if (payload.query !== "") {
+                    room.game.nextRound(payload.query, payload.numResponses, payload.timeSeconds);
+                    JSON.parse(payload.guessed).forEach((elt) => {
+                        reveal(elt.suggestion, elt.suggestionIndex, elt.score, false);
+                    });
+                }
             }
-            if (game.multiplayer) {
-                if (!game.hosting) {
+            if (room.multiplayer) {
+                if (!room.hosting) {
                     configureMultiplayerScore(JSON.parse(payload.users));
                 }
                 $multiScore.show("fade", 0);
@@ -466,8 +469,17 @@ class Connection {
                 $singleScore.show("fade", 0);
             }
         }
-        if (game.multiplayer) {
+        if (room.multiplayer) {
             addMultiplayerScoreRow(payload.userId, payload.username, payload.score);
+        }
+    }
+
+    receiveLeftMessage(payload) {
+        if (payload.roomClose) {
+            alert("Host left, closing room!");
+            window.location.replace("/");
+        } else {
+            removeMultiplayerScoreRow(payload.userId);
         }
     }
 
@@ -475,33 +487,32 @@ class Connection {
         const message = {
             type: NEW_GAME,
             payload: {
-                roomId: game.id,
+                roomId: room.id,
                 settings: {
-                    type: game.multiplayer ? "multiplayer" : "singleplayer",
-                    // maxPlayers: game.multiplayer ? 5 : 1,
+                    type: room.multiplayer ? "multiplayer" : "singleplayer",
+                    // maxPlayers: room.multiplayer ? 5 : 1,
                     // mode: $modeMeta[0].checked ? "meta" : "standard",
-                    rounds: game.roundsRemaining
+                    mode: "standard",
+                    rounds: $sliderRounds.slider("value")
                 }
             }
         };
         this.connection.send(JSON.stringify(message));
     }
 
+    receiveNewGameMessage() {
+        room.startGame();
+        $playSingle.show("fade");
+    }
+
     sendNewRoundMessage() {
         const message = {
             type: NEW_ROUND,
             payload: {
-                roomId: game.id
+                roomId: room.id
             }
         };
         this.connection.send(JSON.stringify(message));
-        // message.query = "What does the fox";
-        // message.numResponses = 9;
-        // // TODO: Remove when necessary
-        // this.answers.forEach((val, key, map) => {
-        //     val.guessed = false;
-        // })
-        // this.receiveNewRoundMessage(message);
     }
 
     receiveNewRoundMessage(payload) {
@@ -510,7 +521,7 @@ class Connection {
             window.location.replace("/");
         } else {
             $guess.val("");
-            game.nextRound(payload.query, payload.numResponses, 30);
+            room.game.nextRound(payload.query, payload.numResponses, 30);
         }
     }
 
@@ -519,19 +530,11 @@ class Connection {
         const message = {
             type: PLAYER_GUESS,
             payload: {
-                roomId: game.id,
+                roomId: room.id,
                 guess: query
             }
         };
         this.connection.send(JSON.stringify(message));
-        // if (this.answers.has(query)) {
-        //     const answer = this.answers.get(query);
-        //     answer.guessed = true;
-        //     message.suggestion = answer.answer;
-        //     message.suggestionIndex = answer.index;
-        //     message.score = answer.score;
-        //     this.receiveGuessMessage(message);
-        // }
     }
 
     receiveGuessMessage(payload) {
@@ -539,7 +542,7 @@ class Connection {
             // TODO: action on wrong guess
         } else {
             reveal(payload.suggestion, payload.suggestionIndex, payload.score, false);
-            if(game.multiplayer) {
+            if(room.multiplayer) {
                 console.log(payload);
                 updateMultiplayerScore(payload.userId, payload.username, payload.playerScore);
             } else {
@@ -552,32 +555,24 @@ class Connection {
         const message = {
             type: ROUND_END,
             payload: {
-                roomId: game.id
+                roomId: room.id
             }
         };
         this.connection.send(JSON.stringify(message));
-        // const rem = new Array();
-        // for (const box of this.answers.values()) {
-        //     if (!box.guessed) {
-        //         rem.push(box);
-        //     }
-        // }
-        // message.remaining = rem;
-        // this.receiveGetRemainingMessage(message);
     }
 
     receiveEndRound(payload) {
         JSON.parse(payload.suggestions).forEach((elt) => {
-            // if (!game.round.answersSeen.has(elt.suggestion))
             reveal(elt.suggestion, elt.suggestionIndex, elt.score, true);
         });
+        room.game.round.end();
     }
 
     sendUpdateTime(timeSeconds) {
         const message = {
             type: UPDATE_TIME,
             payload: {
-                roomId: game.id,
+                roomId: room.id,
                 timeSeconds: timeSeconds
             }
         };
@@ -595,44 +590,45 @@ class Box {
     }
 }
 
+class Room {
+    constructor(hosting, multiplayer, id, username) {
+        this.hosting = hosting;
+        this.multiplayer = multiplayer;
+        this.id = id;
+        this.username = username;
+        this.userId = "";
+    }
+
+    startGame() {
+        $lobby.hide("fade");
+        this.game = new Game();
+        connection.sendNewRoundMessage();
+    }
+}
+
 // hosting is a boolean flag, true if the user creating the game is the host;
 // false if they're just joining an existing game
 class Game {
-    constructor(hosting, multiplayer, roundsRemaining, id, username) {
-        // Boolean flag
-        this.hosting = hosting;
-        this.multiplayer = multiplayer;
+    constructor() {
         this.round = undefined;
-        this.roundsRemaining = roundsRemaining;
-        this.id = id;
-        this.userId = "";
-        this.username = username;
-    }
-
-    configure() {
-        const message = (this.id === "") ? connection.sendCreateMessage() : connection.sendJoinMessage();
     }
 
     nextRound(query, size, duration) {
-        console.log("received nextRound");
         $nextRound.hide("fade", () => {
             $submit.show("fade");
         });
-        this.round = new Round(query, size, duration, this.hosting);
-        this.roundsRemaining--;
+        this.round = new Round(query, size, duration);
         this.round.start();
     }
 }
 
 class Round {
     // Duration is in seconds
-    constructor(query, size, duration, hosting) {
+    constructor(query, size, duration) {
         this.query = query;
-        this.answersSeen = new Set();
         this.over = false;
         this.size = size;
         this.duration = duration;
-        this.hosting = hosting;
         this.countdown = new Countdown(duration);
         this.timer = undefined;
 
@@ -665,14 +661,14 @@ class Round {
             const curTime = this.countdown.tick();
             if (curTime < 0) {
                 this.end();
-                if (this.hosting) {
+                if (room.hosting) {
                     connection.sendEndRound();
                 }
             } else {
                 $timer.text(formatSeconds(curTime));
                 if (curTime === 0) {
                     this.end();
-                    if (this.hosting) {
+                    if (room.hosting) {
                         connection.sendEndRound();
                     }
                 }
@@ -684,7 +680,7 @@ class Round {
         this.over = true;
         clearInterval(this.timer);
         $submit.hide("fade", () => {
-            if (this.hosting) {
+            if (room.hosting) {
                 $nextRound.show("fade")
             }
         });

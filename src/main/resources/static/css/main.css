@@ -77,6 +77,13 @@ a:focus, a:hover{
 	padding: 0;
 }
 
+#scoreArea {
+	position: absolute;
+	top: 25%;
+	right: 0;
+	width: 20%;
+}
+
 .nothing-around {
 	margin: 0;
 }

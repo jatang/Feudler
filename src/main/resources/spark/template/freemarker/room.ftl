@@ -41,9 +41,9 @@
     <hr>
     <!-- Home screen -->
     <div id="home">
-        <input type="button" value="Join game" class="home-button" id=join-game></input>
+        <input type="button" value="Join game" class="home-button" id=join-game>
         <br>
-        <input type="button" value="Set up game" class="home-button" id=setup-game></input>
+        <input type="button" value="Set up game" class="home-button" id=setup-game>
     </div>
     <!-- Game configuration settings box -->
     <div class="settings-box" id="settings">
@@ -104,7 +104,7 @@
 
     <!-- Singleplayer game view -->
     <div id=play-single>
-        <div class="query-area left flex">
+        <div id="queryStuff" class="query-area left flex">
             <div id=input-area class="thin-gray-border pad std-text">
                 <span id="query" class="left"></span>
                 <input id="guess" type="text" class="no-footprint left" maxlength="50">
@@ -116,7 +116,7 @@
                 <div id="next-round" class=search-button>Continue!</div>
             </div>
         </div>
-        <div class="content-area small-margin-bottom">
+        <div id="answerStuff" class="content-area small-margin-bottom">
             <table id="answer-table-1" class="answer-table thin-gray-border">
                 <tr><td></td></tr>
                 <tr><td></td></tr>
@@ -132,18 +132,23 @@
                 <tr><td></td></tr>
             </table>
         </div>
-        <div id="scoreArea" class="center-content content-right">
-            <div id="singleplayerScore">
-                <h5>Score</h5>
-                <h4 id="score" class="std-text">0</h4>
-            </div>
-            <ul id="multiplayerScore" class="undecorated"></ul>
-        </div>
         <br>
         <div id="timerArea" class="content-area center-content">
             <h5>Time Left</h5>
             <h4 id="timer" class="std-text"></h4>
         </div>
+    </div>
+    <div id="lobby" class="content-area center-content">
+        <div id="waiting-message">Waiting for host...</div>
+        <div id="room-code-area"><span>Room code: </span><span id="room-code-field"></span></div>
+        <input type="button" value="Start game" class="home-button" id=start-from-lobby>
+    </div>
+    <div id="scoreArea" class="center-content">
+        <div id="singleplayerScore">
+            <h5>Score</h5>
+            <h4 id="score" class="std-text">0</h4>
+        </div>
+        <ul id="multiplayerScore" class="undecorated"></ul>
     </div>
 
     <!-- Dialog boxes -->
@@ -162,7 +167,7 @@
             <fieldset>
                 <label for="name">Username</label>
                 <input type="text" name="name" id="name" class="text ui-widget-content ui-corner-all">
-                <label for="room">Room number</label>
+                <label for="room">Room code</label>
                 <input type="text" name="room" id="room" class="text ui-widget-content ui-corner-all">
 
                 <!-- Allow form submission with keyboard without duplicating the dialog button -->

@@ -1,8 +1,4 @@
 
-Todo Scoring:
-	1. Make sure inputs are being lowercased.
-	2. Make sure newExistingSuggestionClustering() is being used.
-
 Bad Word2Vec results:
 death/dying: 0.470971
 human/person: 0.299469
@@ -12,3 +8,4 @@ draw/tie: 0.313729 -> listed as a synonym
 dead/die: 0.467538
 thin/thinning: 0.441996
 bored/thirsty: 0.395349
+vodka/kombucha: 0.416521

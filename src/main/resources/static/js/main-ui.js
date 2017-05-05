@@ -7,8 +7,9 @@ const ROUND_END = 5;
 const UPDATE_TIME = 6;
 const USER_JOIN = 7;
 const USER_LEFT = 8;
-const PLAYER_GUESS = 9;
-const USER_CHAT = 10;
+const USER_KICK = 9;
+const PLAYER_GUESS = 10;
+const USER_CHAT = 11;
 
 const MAX_ROUNDS = 5;
 let game;

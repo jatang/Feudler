@@ -26,7 +26,7 @@ public class GameTest {
     Game game = new Game(1,
         ImmutableList.of(new QueryResponses(1, "", clustering),
             new QueryResponses(4, "", clustering)));
-    User user = new User(1, "", false);
+    User user = new User(null, 1, "", false);
     game.addPlayer(user);
     game.newRound();
     game.score(user, "should be id of one");

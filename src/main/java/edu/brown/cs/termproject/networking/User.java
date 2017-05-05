@@ -2,6 +2,8 @@ package edu.brown.cs.termproject.networking;
 
 import java.util.Objects;
 
+import org.eclipse.jetty.websocket.api.Session;
+
 /**
  * A class representing an User connected to a Room. The User may or may not be
  * in a Game.
@@ -10,7 +12,7 @@ import java.util.Objects;
  */
 public class User {
 
-  // Might also store Session in user.
+  private final Session session;
   private final int id;
   private String username;
   // Don't know if we want spectating. Default will be false unless we do.
@@ -19,6 +21,8 @@ public class User {
   /**
    * Creates a User object representing a person in a Room.
    *
+   * @param session
+   * 	The session of the User.
    * @param id
    *          The id of the User to distinguish between players on the Client
    *          side.
@@ -28,12 +32,22 @@ public class User {
    *          A boolean representing whether or not the User is just watching
    *          the Game.
    */
-  public User(int id, String username, boolean spectating) {
+  public User(Session session, int id, String username, boolean spectating) {
+	this.session = session;
     this.id = id;
     this.username = username;
     this.spectating = spectating;
   }
 
+  /**
+   * Gets the Session of the User.
+   *
+   * @return Returns the User's Session.
+   */
+  public Session getSession() {
+    return session;
+  }
+  
   /**
    * Gets the id of the User.
    *

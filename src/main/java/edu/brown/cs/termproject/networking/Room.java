@@ -55,7 +55,7 @@ public class Room {
   public synchronized boolean addUser(Session session, String username) {
 	  
 	if(userMap.size() < maxUsers) {
-	    userMap.put(session, new User(userMap.size(), username, false));
+	    userMap.put(session, new User(session, userMap.size(), username, false));
 	    User added = userMap.get(session);
 	    if(game != null && added != null && !added.isSpectating()) {
 	    	game.addPlayer(added);
@@ -86,7 +86,27 @@ public class Room {
    *         be removed.
    */
   public boolean removeUser(Session session) {
-    return userMap.remove(session) != null;
+	  User remove = userMap.remove(session);
+    if(remove != null && game != null) {
+    	game.removePlayer(remove);
+    }
+    return remove != null;
+  }
+  
+  /**
+   * Gets a User from the Game based on an id.
+   *
+   * @param id
+   *          An integer id presumably for a User in the Room.
+   * @return Returns a User with corresponding id.
+   */
+  public User getUser(int id) {
+    for(User user : userMap.values()) {
+    	if(user.getId() == id) {
+    		return user;
+    	}
+    }
+    return null;
   }
 
   /**

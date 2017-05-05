@@ -30,8 +30,7 @@ public class ServerSocket {
   private static final Set<String> ROOM_IDS =
       Collections.synchronizedSet(new HashSet<String>());
   private static final Map<String, Room> ROOMS = new ConcurrentHashMap<>();
-
-  private static final String roomChars = "23456789ABCDEFGHJKLMNPQRSTUVWXY";
+  private static final String roomChars = "23456789abcdefghjklmnpqrstuvwxyz";
 
   private static String generateRoomId() {
     Random random = new Random();
@@ -50,7 +49,7 @@ public class ServerSocket {
 
   private static enum MESSAGE_TYPE {
     CONNECT, CREATE_ROOM, CUSTOM_QUERY, NEW_GAME, NEW_ROUND, ROUND_END,
-    UPDATE_TIME, USER_JOIN, USER_LEFT, PLAYER_GUESS, USER_CHAT
+    UPDATE_TIME, USER_JOIN, USER_LEFT, USER_KICK, PLAYER_GUESS, USER_CHAT
   }
 
   private static final MESSAGE_TYPE[] MESSAGE_VALUES = MESSAGE_TYPE.values();
@@ -68,10 +67,42 @@ public class ServerSocket {
   @OnWebSocketClose
   public void closed(Session session, int statusCode, String reason) {
 
-    // Compose and send USER_LEFT message here if necessary
-    for (Room room : ROOMS.values()) {
-      room.removeUser(session);
-    }
+	  try {
+	    // Compose and send USER_LEFT message here if necessary
+	    for (Room room : ROOMS.values()) {
+	    	User user = room.getUser(session);
+	      if(room.removeUser(session)) {
+	    	  boolean roomClose = false;
+	    	  if(session.equals(room.getCreator())) {
+	    		  if(room.getGame() != null) {
+	    			  room.getGame().endGame();
+	    		  }
+	    		  ROOM_IDS.remove(room.getRoomId());
+	    		  ROOMS.remove(room.getRoomId());
+	    		  roomClose = true;
+	    	  }
+	    	  
+	    	  JsonObject updateMessage = new JsonObject();
+	    	  JsonObject updatePayload = new JsonObject();
+	    	  
+	    	  updatePayload.addProperty("userId", user.getId());
+	    	  updatePayload.addProperty("username", user.getUsername());
+	    	  updatePayload.addProperty("roomClose", roomClose);
+	    	  
+	    	  updateMessage.addProperty("type", MESSAGE_TYPE.USER_LEFT.ordinal());
+	          updateMessage.addProperty("payload", updatePayload.toString());
+	          String updateMessageString = updateMessage.toString();
+	
+	          // Send back response on USER_LEFT.
+	          for (Session sess : room.getUserSessions()) {
+	            sess.getRemote().sendString(updateMessageString);
+	          }
+	          break;
+	      }
+	    }
+	  } catch (Exception e) {
+		  System.out.println("ERROR: Unable to send USER_LEFT");
+	  }
   }
 
   @OnWebSocketMessage
@@ -136,7 +167,7 @@ public class ServerSocket {
           // Check whether user requesting new game is owner. If so, start new
           // game with same room otherwise do nothing.
 
-          room = ROOMS.get(payload.get("roomId").getAsString());
+          room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
           if (room == null) {
             return;
           }
@@ -166,7 +197,7 @@ public class ServerSocket {
           // round
           // game in room otherwise do nothing.
 
-          room = ROOMS.get(payload.get("roomId").getAsString());
+          room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
           if (room == null) {
             return;
           }
@@ -203,7 +234,7 @@ public class ServerSocket {
           // Check whether user requesting new round is owner. If so, end
           // current round in room. Otherwise do nothing.
 
-          room = ROOMS.get(payload.get("roomId").getAsString());
+          room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
           if (room == null) {
             return;
           }
@@ -250,7 +281,7 @@ public class ServerSocket {
             // Check whether room id is valid and whether user is owner. If so,
             // update the time
 
-            room = ROOMS.get(payload.get("roomId").getAsString());
+            room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
             if (room == null) {
               return;
             }
@@ -267,7 +298,7 @@ public class ServerSocket {
           // Check whether room id is valid and is accepting users. If so, add
           // user to room.
         	
-          room = ROOMS.get(payload.get("roomId").getAsString());
+          room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
           if (room != null) {      	  
             final boolean added =
                 room.addUser(session, payload.get("username").getAsString());
@@ -357,6 +388,30 @@ public class ServerSocket {
           session.getRemote().sendString(updateMessage.toString());
 
           break;
+        case USER_KICK:
+        	room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
+            if (room != null && session.equals(room.getCreator())) {
+            	
+            	User kickUser = room.getUser(payload.get("userId").getAsInt());
+            	if(kickUser != null) {
+            		updateMessage = new JsonObject();
+                    updatePayload = new JsonObject();
+
+                    updatePayload.addProperty("userId", kickUser.getId());
+                    updatePayload.addProperty("username", kickUser.getUsername());
+
+                    updateMessage.addProperty("type", MESSAGE_TYPE.USER_KICK.ordinal());
+                    updateMessage.addProperty("payload", updatePayload.toString());
+                    updateMessageString = updateMessage.toString();
+
+                    // Send back response on USER_KICK.
+                    for (Session sess : room.getUserSessions()) {
+                      sess.getRemote().sendString(updateMessageString);
+                    }
+                    room.removeUser(kickUser.getSession());
+            	}
+            }
+          break;
         case PLAYER_GUESS:
           // Payload contains room link/id, guess text
 
@@ -366,7 +421,7 @@ public class ServerSocket {
           // guess (check if valid guess, check if already guessed),
           // otherwise do nothing.
 
-          room = ROOMS.get(payload.get("roomId").getAsString());
+          room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
           if (room == null) {
             return;
           }
@@ -421,7 +476,7 @@ public class ServerSocket {
           // session. If so, send username, message to all users in the room on
           // USER_CHAT.
 
-          room = ROOMS.get(payload.get("roomId").getAsString());
+          room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
           if (room == null) {
             return;
           }
@@ -434,6 +489,7 @@ public class ServerSocket {
           updateMessage = new JsonObject();
           updatePayload = new JsonObject();
 
+          updatePayload.addProperty("userId", chatUser.getId());
           updatePayload.addProperty("username", chatUser.getUsername());
           updatePayload.addProperty("message",
               payload.get("message").getAsString());
@@ -452,8 +508,6 @@ public class ServerSocket {
       }
 
     } catch (Exception e) {
-    	//TODO Remove
-      e.printStackTrace();
       System.out.println("ERROR: Unexpected message: " + received.toString());
     }
   }

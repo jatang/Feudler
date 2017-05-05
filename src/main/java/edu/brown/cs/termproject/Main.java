@@ -42,22 +42,7 @@ public final class Main {
     this.args = args;
   }
 
-  private void run() {
-	  Room room = new Room("", null, 4);
-	  room.newGame(2);
-	  room.getGame().newRound();
-	  
-	  System.out.println(room.getGame().getCurrentQuery());
-	  
-	  for(Suggestion s : room.getGame().getCurrentQueryResponses().getResponses().asList()) {
-		  System.out.println(s.getResponse());
-	  }
-	  
-	  System.out.println();
-	  for(String s : room.getGame().getCurrentHints()) {
-		  System.out.println(s);
-	  }
-	  
+  private void run() {	  
 	  runSparkServer(4567);
   }
 

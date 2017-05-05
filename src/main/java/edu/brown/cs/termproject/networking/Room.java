@@ -130,7 +130,8 @@ public class Room {
         if (mode.equals("standard")) {
           queries.addAll(new qGenerator().nRandomQrs(rounds - queries.size()));
         } else {
-          queries.addAll(new qGenerator().nRandomQrs(rounds - queries.size()));
+          queries.addAll(
+              new qGenerator().nRandomMetaModeQrs((rounds - queries.size())));
         }
       }
 

@@ -255,7 +255,7 @@ public class Game {
    * Ends the Game and saves all data collected during the Game.
    */
   public synchronized void endGame() {
-    System.out.println("Ending game.");
+    // System.out.println("Ending game.");
 
     if (guesses.isEmpty()) {
       return;
@@ -278,9 +278,9 @@ public class Game {
       PreparedStatement getStoredGuesses = conn.prepareStatement(
           "select ID, answer, score from guesses where queryID=?;");
 
-      System.out.println("Going through ids.");
+      // System.out.println("Going through ids.");
       for (Integer id : guesses.keySet()) {
-        System.out.println("Id of " + id);
+        // System.out.println("Id of " + id);
 
         getStoredGuesses.setInt(1, id);
         try (ResultSet rs = getStoredGuesses.executeQuery()) {

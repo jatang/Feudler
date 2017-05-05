@@ -119,6 +119,47 @@ public class DBConnector {
   }
 
   /**
+   * Returns queryNum random Queries in the form of QueryResponses datatype, or,
+   * if QueryNum > the number of queries in the database, returns all queries in
+   * the database in QueryResponses form.
+   * 
+   * @param queryNum
+   *          - Number of queries to return
+   * @return - queryNum random Queries
+   * @throws SQLException
+   *           - If SQL statements encounter issues.
+   */
+  public List<QueryResponses> nRandomMetaModeQueries(int queryNum)
+      throws SQLException {
+    PreparedStatement prep = conn.prepareStatement(
+        "select * from queries where ID in " + "(select queryID from "
+            + "(select queryID, count(*) as c from guesses group by queryID) where c > 3) "
+            + "order by random() limit ?;");
+    prep.setInt(1, queryNum);
+    ResultSet rs = prep.executeQuery();
+    List<QueryResponses> queries = new ArrayList<>();
+    while (rs.next()) {
+      String query = rs.getString("query");
+      int qID = rs.getInt("ID");
+      List<String> responses = new ArrayList<>();
+      PreparedStatement resPrep = conn.prepareStatement(
+          "SELECT answer FROM guesses WHERE queryID = ? ORDER BY score DESC;");
+      resPrep.setInt(1, qID);
+      ResultSet resRs = resPrep.executeQuery();
+
+      while (resRs.next()) {
+        responses.add(resRs.getString(1));
+      }
+      resPrep.close();
+      queries.add(new QueryResponses(qID, query,
+          Clustering.newSuggestionClustering(responses, Word2VecModel.model)));
+    }
+    prep.close();
+    // ResultSets closed when you close their prep;
+    return queries;
+  }
+
+  /**
    * Inserts a QueryResponses into the database Note, this method currently
    * assumes that the QueryResponses is valid. Please check that the minimum
    * number of responses is present before using this function and that query is

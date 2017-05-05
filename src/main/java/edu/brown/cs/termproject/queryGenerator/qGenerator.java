@@ -417,4 +417,10 @@ public class qGenerator {
     return db.nRandomQueries(queryNum);
   }
 
+  // For meta mode.
+  public List<QueryResponses> nRandomMetaModeQrs(int queryNum)
+      throws SQLException {
+    return db.nRandomMetaModeQueries(queryNum);
+  }
+
 }

@@ -10,10 +10,11 @@ thin/thinning: 0.441996
 bored/thirsty: 0.395349
 vodka/kombucha: 0.416521
 beer/milk: 0.403793
-married/son: ~0.4
+married/son: 0.404831
 hiv/aids: 0.22283
 eat/sleep: 
 lotr/batman: 0.41
+beer/espresso: 0.427523
 
 Good results:
 cellulite/hair: 0.409

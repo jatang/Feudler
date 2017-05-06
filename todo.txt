@@ -7,8 +7,12 @@ Todo:
     5. If the round has ended, set the frontend timer to 0.
     6. Displays answers to a new player who joined after the time was up.
     7. nRandomQueries -> double check that this is truly random.
+    8. An option for meta mode.
+	9. Re-run query generation to avoid queries with few answers
 
 If we have time:
     1. Show stopwords.
     2. Chat.
     3. Remove duplicate queries in the same room.
+	4. A message at the end of the game that lets users know who won.
+	5. Make room codes actual words (makes it easier to share in a group).

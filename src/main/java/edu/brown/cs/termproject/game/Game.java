@@ -235,7 +235,9 @@ public class Game {
       QueryResponses currentQuery = queries.get(currRound);
 
       // Save guess
-      guesses.put(currentQuery.getId(), guess);
+      if (guessIsntJunk(guess)) {
+        guesses.put(currentQuery.getId(), guess);
+      }
 
       Optional<Suggestion> res = currentQuery.getResponses().clusterOf(guess);
       if (res.isPresent()) {
@@ -414,4 +416,25 @@ public class Game {
     return playerMap.remove(user) != null;
   }
 
+  /*
+   * Returns true if the guess should be added to the database. All this does is
+   * split on whitespace and check that each string is in the vocab. Isn't used
+   * outside of the game class (not being marked private in order to test).
+   */
+  boolean guessIsntJunk(String guess) {
+    Set<String> vocab = Word2VecModel.model.vocabulary();
+    Set<String> dirty = Word2VecModel.model.getNaughtyWords();
+
+    String[] parts = guess.split("\\s+");
+    for (String part : parts) {
+      if (!part.isEmpty()) {
+        if (dirty.contains(part)) { // if it is a dirty word
+          return false;
+        } else if (!vocab.contains(part)) { // or if it's not a word
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 }

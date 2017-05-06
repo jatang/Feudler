@@ -40,6 +40,7 @@ public class Word2VecModel implements AutoCloseable {
   private Connection embeddingConn;
   private PreparedStatement embeddingStatement;
   private ImmutableSet<String> stopwords;
+  private ImmutableSet<String> naughtyWords;
 
   /**
    * Overloaded constructor for old code.
@@ -50,7 +51,7 @@ public class Word2VecModel implements AutoCloseable {
    *          the path to the stopwords file
    */
   public Word2VecModel(String dbPath, String stopwordPath) {
-    this(dbPath, stopwordPath, "data/similar_words.sqlite3");
+    this(dbPath, stopwordPath, "data/naughty_words.txt");
   }
 
   /**
@@ -60,8 +61,11 @@ public class Word2VecModel implements AutoCloseable {
    *          the path to the database
    * @param stopwordPath
    *          the path to the stopwords file
+   * @param naughtyWordPath
+   *          the path to the naughty words file
    */
-  public Word2VecModel(String dbPath, String stopwordPath, String similarPath) {
+  public Word2VecModel(String dbPath, String stopwordPath,
+      String naughtyWordPath) {
     cache = new ConcurrentHashMap<>();
 
     try {
@@ -89,6 +93,12 @@ public class Word2VecModel implements AutoCloseable {
       Set<String> temporaryStopwords = new HashSet<>();
       Files.lines(Paths.get(stopwordPath)).forEach(temporaryStopwords::add);
       stopwords = ImmutableSet.copyOf(temporaryStopwords);
+
+      // Reads naughty words from file.
+      Set<String> temporaryNaughtyWords = new HashSet<>();
+      Files.lines(Paths.get(naughtyWordPath))
+          .forEach(temporaryNaughtyWords::add);
+      naughtyWords = ImmutableSet.copyOf(temporaryNaughtyWords);
 
     } catch (ClassNotFoundException exception) {
       throw new RuntimeException("Could not find class org.sqlite.JDBC.");
@@ -189,5 +199,15 @@ public class Word2VecModel implements AutoCloseable {
    */
   public ImmutableSet<String> getStopwords() {
     return stopwords;
+  }
+
+  /**
+   * Gets the model's naughty words. Used in meta mode, to prevent storing dirty
+   * answers.
+   *
+   * @return a set of naughty words
+   */
+  public ImmutableSet<String> getNaughtyWords() {
+    return naughtyWords;
   }
 }

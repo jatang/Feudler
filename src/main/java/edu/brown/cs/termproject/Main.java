@@ -12,6 +12,7 @@ import edu.brown.cs.termproject.networking.Room;
 import edu.brown.cs.termproject.networking.ServerSocket;
 import edu.brown.cs.termproject.networking.Suggestions;
 import edu.brown.cs.termproject.scoring.Suggestion;
+import edu.brown.cs.termproject.scoring.Word2VecModel;
 import freemarker.template.Configuration;
 import spark.ExceptionHandler;
 import spark.ModelAndView;
@@ -42,8 +43,9 @@ public final class Main {
     this.args = args;
   }
 
-  private void run() {	  
-	  runSparkServer(4567);
+  private void run() {
+    Word2VecModel.model.tokenize("the cat");
+    runSparkServer(4567);
   }
 
   private static void runSparkServer(int port) {

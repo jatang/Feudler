@@ -57,34 +57,36 @@
             <input type="radio" name="player-type" id="player-type-multi">
         </fieldset>
 
-    <#--<h5>Game Mode</h5>-->
-    <#--<fieldset>-->
-    <#--<label for="mode-standard">Standard</label>-->
-    <#--<input type="radio" name="mode" id="mode-standard" checked="checked">-->
+        <h5>Game Mode</h5>
+        <fieldset>
+            <label for="mode-standard">Standard</label>
+            <input type="radio" name="mode" id="mode-standard" checked="checked">
 
-    <#--<label for="mode-meta">Meta</label>-->
-    <#--<input type="radio" name="mode" id="mode-meta">-->
-    <#--</fieldset>-->
+            <label for="mode-meta">Meta</label>
+            <input type="radio" name="mode" id="mode-meta">
+        </fieldset>
 
         <h5># of Rounds</h5>
         <div id="slider-rounds" class="slider">
             <div id="handle-rounds" class="ui-slider-handle handle small-margin-bottom"></div>
         </div>
 
-    <#--<h5>Category</h5>-->
-    <#--<fieldset>-->
-    <#--<!-- TODO: Foods, Drinks, Actors, Animals &ndash;&gt;-->
-    <#--<label for="category-any">Anything!</label>-->
-    <#--<input type="radio" name="category" id="category-any" checked="checked">-->
+        <h5>Category</h5>
+        <fieldset>
+        <#--<!-- TODO: Foods, Drinks, Actors, Animals &ndash;&gt;-->
+            <label for="category-any">Anything!</label>
+            <input type="radio" name="category" id="category-any" checked="checked">
 
-    <#--<label for="category-science">Science</label>-->
-    <#--<input type="radio" name="category" id="category-science">-->
+        <#--<label for="category-science">Science</label>-->
+        <#--<input type="radio" name="category" id="category-science">-->
 
-    <#--<label for="category-custom">Custom</label>-->
-    <#--<input type="radio" name="category" id="category-custom">-->
-    <#--</fieldset>-->
+            <label for="category-custom">Custom</label>
+            <input type="radio" name="category" id="category-custom">
+        </fieldset>
         <hr>
-        <input type="button" value="Configure Game" id=configure-game class=small-margin-bottom></input>
+        <input type="button" value="Configure Game" id=configure-game class=small-margin-bottom>
+        <br>
+        <input type="button" value="Back" id="button-back-home" class=small-margin-bottom>
     </div>
 
     <!-- Custom settings box -->
@@ -93,7 +95,9 @@
         <hr>
         <ul class="undecorated" id="queries">
             <li class="small-margin-bottom" id="entry0">
-                <input type="text" id="q0"><input type="button" value="x" class="delete" id=d0>
+                <span>
+                    <input type="text" class="list-query" id="q0"><input type="button" value="x" class="delete" id=d0>
+                </span>
             </li>
         </ul>
         <input type="button" value="New query" id="button-new-query">

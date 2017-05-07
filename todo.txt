@@ -1,14 +1,13 @@
 
 Todo:
-    1. When the host leaves, redirect all players back to the home page.
+    1. Add appropriate error message for trying to join a full room
     2. Add a play again button at the end of multiplayer games.
     3. Add more specific queries.
     4. Custom queries.
     5. If the round has ended, set the frontend timer to 0.
     6. Displays answers to a new player who joined after the time was up.
     7. nRandomQueries -> double check that this is truly random.
-    8. An option for meta mode.
-	9. Re-run query generation to avoid queries with few answers
+	8. Re-run query generation to avoid queries with few answers
 
 If we have time:
     1. Show stopwords.

@@ -22,11 +22,17 @@
 
 .settings-box {
 	margin-top: 3%;
-	margin-left: 35%;
-	margin-right: 35%;
+	display: inline-block;
+	padding: 10px;
+	margin-left: 0;
+	margin-right: 0;
 	background-color: rgba(230, 230, 230, 1.0);
 	border: 1px solid lightgray;
 	border-radius: 5px;
+}
+
+.list-query, .delete {
+	display: inline-block;
 }
 
 .settings-box h5 {
@@ -220,6 +226,10 @@ a:focus, a:hover{
 
 .ui-dialog .ui-state-error {
 	padding: .3em;
+}
+
+#start-from-lobby {
+	display: inline-block;
 }
 
 .validateTips {

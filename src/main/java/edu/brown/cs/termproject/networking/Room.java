@@ -27,6 +27,7 @@ public class Room {
 
   private Game game = null;
   private int maxUsers = 1;
+  private static int MAX_USERS = 10;
   // Store Settings if needed
 
   /**
@@ -40,7 +41,7 @@ public class Room {
   public Room(String roomId, Session creator, int maxUsers /* , Settings */ ) {
     this.roomId = roomId;
     this.creator = creator;
-    this.maxUsers = maxUsers;
+    this.maxUsers = Math.max(1, Math.min(maxUsers, MAX_USERS));
   }
 
   /**

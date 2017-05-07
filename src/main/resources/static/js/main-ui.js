@@ -420,7 +420,7 @@ class Connection {
         const message = {
             type: CREATE_ROOM,
             payload: {
-                maxUsers: $("#player-type-multi")[0].checked ? 5 : 1
+                maxUsers: $("#player-type-multi")[0].checked ? 10 : 1
             }
         };
         this.connection.send(JSON.stringify(message));

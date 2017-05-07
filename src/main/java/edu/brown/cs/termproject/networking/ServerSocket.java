@@ -285,6 +285,8 @@ public class ServerSocket {
 
           // Check whether room id is valid and is accepting users. If so, add
           // user to room.
+        	
+          String error = "";
 
           room = ROOMS.get(payload.get("roomId").getAsString().toLowerCase());
           if (room != null) {
@@ -364,7 +366,11 @@ public class ServerSocket {
 
               session.getRemote().sendString(updateMessage.toString());
               return;
+            } else {
+            	error = "Room is full";
             }
+          } else {
+        	  error = "Room does not exist";
           }
 
           updateMessage = new JsonObject();
@@ -373,6 +379,7 @@ public class ServerSocket {
           updatePayload.addProperty("userId", "");
           updatePayload.addProperty("username", "");
           updatePayload.addProperty("score", "");
+          updatePayload.addProperty("error", error);
 
           updateMessage.addProperty("type", MESSAGE_TYPE.USER_JOIN.ordinal());
           updateMessage.addProperty("payload", updatePayload.toString());

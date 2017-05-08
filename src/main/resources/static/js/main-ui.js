@@ -506,7 +506,6 @@ class Connection {
                     type: room.multiplayer ? "multiplayer" : "singleplayer",
                     // maxPlayers: room.multiplayer ? 5 : 1,
                     mode: $modeMeta[0].checked ? "meta" : "standard",
-                    mode: "standard",
                     rounds: $sliderRounds.slider("value")
                 }
             }

@@ -160,7 +160,7 @@ public class ServerSocket {
         	
         	JsonArray valid = new JsonArray();
         	for(JsonElement query : payload.get("queries").getAsJsonArray()) {
-        		valid.add(generator.validateQuery(query.getAsString()) == null);
+        		valid.add(generator.validateQuery(query.getAsString()) != null);
         	}
         	
           // Check whether or not custom query is valid.

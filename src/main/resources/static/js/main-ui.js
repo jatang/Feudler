@@ -31,6 +31,8 @@ let $sliderRounds;
 let $nextRound;
 let $submit;
 // Display elements
+let $queryList;
+
 let $roomCodeField;
 let $scoreArea;
 let $score;
@@ -41,11 +43,11 @@ let $guess;
 let $dialog;
 
 let connection;
-
+let customQueries = [];
 
 
 $(document).ready(() => {
-    connection = new Connection("ws://138.16.39.62:4567/connection");
+    connection = new Connection("ws://localhost:4567/connection");
     $home =$("#home");
     $settings = $("#settings").hide();
     $custom = $("#custom").hide();
@@ -94,6 +96,8 @@ $(document).ready(() => {
         }
     });
 
+    $queryList = $("#queries");
+
 // Deals with making sure incompatible settings can't be chosen together
     $modeMeta.change(() => {
         if ($modeMeta[0].checked) {
@@ -141,7 +145,7 @@ $(document).ready(() => {
                 $custom.show("drop", {direction: "right"});
             });
         } else {
-        connection.sendCreateMessage();
+            connection.sendCreateMessage();
         }
     });
 
@@ -166,7 +170,6 @@ $(document).ready(() => {
     $alertTooManyQueries.children().append("Can only add up to "
         + MAX_ROUNDS + " queries");
     $newQueryButton.click(() => {
-        $queryList = $("#queries");
         numQueries = $queryList.children().length;
         if (numQueries < MAX_ROUNDS) {
             const children = $queryList.children();
@@ -179,6 +182,14 @@ $(document).ready(() => {
         } else {
             $alertTooManyQueries.dialog("open");
         }
+    });
+
+    //Sets up play button in custom query box
+    const $playButton = $("#button-play").click(() => {
+        console.log("play clicked");
+        customQueries = [];
+        $queryList.find("input[type='text']").each((i, e) => customQueries.push(e.value));
+        connection.sendCustomQueryMessage(customQueries);
     });
 
 // Sets up slider.
@@ -234,6 +245,7 @@ $(document).ready(() => {
         $dialog.dialog( "open" );
     });
 });
+
 function validateJoin() {
     let valid = true;
     const $name = $("#name").removeClass( "ui-state-error" );
@@ -242,7 +254,6 @@ function validateJoin() {
     valid = valid && checkLength( $room, "room number", 6, 6 );
     if (valid) {
         joinGame($room.val(), $name.val());
-        $dialog.dialog( "close" );
     }
 }
 
@@ -296,7 +307,9 @@ function setUpButtons() {
     $(".delete").bind("click", (event) => {
         const button = event.currentTarget;
         const idToDelete = "#entry" + button.id.substring(1);
-        $(idToDelete).remove();
+        if ($queryList.children().length > 1) {
+            $(idToDelete).remove();
+        }
     });
 }
 
@@ -335,10 +348,11 @@ function removeMultiplayerScoreRow(userId) {
     $multiScore.find($(`#usr${userId}`)).remove();
 }
 
-function toLobbyFrom(eltToHide) {
+function toLobbyFrom(eltToHide, callback) {
     eltToHide.hide("fade", () => {
         if (room.multiplayer) {
-            $lobby.show("fade");
+            console.log("showing lobby");
+            $lobby.show("fade", callback);
             if (room.hosting) {
                 $startFromLobby.show("fade");
             } else {
@@ -351,7 +365,6 @@ function toLobbyFrom(eltToHide) {
 }
 
 function toPlayFromLobby() {
-    console.log("calling hide on lobby");
     $lobby.hide("fade", () => {
         $playSingle.show("fade");
     });
@@ -385,9 +398,13 @@ class Connection {
             const payload = JSON.parse(message.payload);
             console.log("RECEIVED MESSAGE");
             console.log(message);
+            console.log(messageEvent.data);
             switch (message.type) {
                 case CONNECT:
                     console.log("websocket connected");
+                    break;
+                case CUSTOM_QUERY:
+                    connection.receiveCustomQueryMessage(payload);
                     break;
                 case CREATE_ROOM:
                     connection.receiveCreateMessage(payload);
@@ -439,6 +456,46 @@ class Connection {
         }
     }
 
+    sendCustomQueryMessage(queryArray) {
+        const message = {
+            type: CUSTOM_QUERY,
+            payload: {
+                queries: queryArray
+            }
+        };
+        this.connection.send(JSON.stringify(message));
+    }
+
+    receiveCustomQueryMessage(payload) {
+        const invalidIndices = [];
+        JSON.parse(payload.valid).forEach((elt, index) => {
+            if (!elt) {
+                invalidIndices.push(index);
+            }
+        });
+        if (invalidIndices.length === 0) {
+            $custom.hide("fade");
+            this.sendCreateMessage();
+        } else {
+            const singular = invalidIndices.length === 1;
+            let message = `${singular ? "Query" : "Queries"} numbered `;
+            invalidIndices.forEach((elt, index, arr) => {
+                if (index > 0 && arr.length > 2) {
+                    message += ", ";
+                }
+                // If it's the last one
+                if (index === arr.length - 1) {
+                    if (index > 0) {
+                        message += " and ";
+                    }
+                }
+                message += elt;
+            });
+            message += ` ${singular ? "is" : "are"} invalid.`;
+            alert(message);
+        }
+    }
+
     sendJoinMessage() {
         const message = {
             type: USER_JOIN,
@@ -451,28 +508,35 @@ class Connection {
     }
 
     receiveJoinMessage(payload) {
-        if (payload.userId === "") {
+        if (payload.error === "Room is full") {
+            $("#room").addClass("ui-state-error");
+            updateTips("That room is already full.");
+            return;
+        } else if (payload.error === "Room does not exist") {
             $("#room").addClass("ui-state-error");
             updateTips("No room exists with that ID.");
             return;
         }
+        $dialog.dialog("close");
         // if user is the one joining game
         if (room.userId === "") {
             room.userId = payload.userId;
             if (room.hosting) {
                 toLobbyFrom($settings);
             } else {
-                toLobbyFrom($home);
-                if (payload.query !== "") {
-                    console.log("query exists");
-                    console.log(payload);
-                    room.game = new Game();
-                    room.game.nextRound(payload.query, payload.numResponses, payload.timeSeconds);
-                    toPlayFromLobby();
-                    JSON.parse(payload.guessed).forEach((elt) => {
-                        reveal(elt.suggestion, elt.suggestionIndex, elt.score, false);
-                    });
-                }
+                toLobbyFrom($home, () => {
+                    if (payload.query !== "") {
+                        console.log("query exists");
+                        console.log(payload);
+                        room.game = new Game();
+                        room.game.nextRound(payload.query, payload.numResponses, payload.timeSeconds);
+                        toPlayFromLobby();
+                        JSON.parse(payload.guessed).forEach((elt) => {
+                            reveal(elt.suggestion, elt.suggestionIndex, elt.score, false);
+                        });
+                    }
+                });
+
             }
             if (room.multiplayer) {
                 if (!room.hosting) {
@@ -510,6 +574,9 @@ class Connection {
                 }
             }
         };
+        if (customQueries.length > 0) {
+            message.queries = customQueries;
+        }
         this.connection.send(JSON.stringify(message));
     }
 

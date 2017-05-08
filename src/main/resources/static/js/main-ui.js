@@ -489,7 +489,7 @@ class Connection {
                         message += " and ";
                     }
                 }
-                message += elt;
+                message += (elt + 1);
             });
             message += ` ${singular ? "is" : "are"} invalid.`;
             alert(message);
@@ -575,8 +575,9 @@ class Connection {
             }
         };
         if (customQueries.length > 0) {
-            message.queries = customQueries;
+            message.payload.queries = customQueries;
         }
+        console.log(JSON.stringify(message));
         this.connection.send(JSON.stringify(message));
     }
 

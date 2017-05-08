@@ -156,7 +156,6 @@ public class ServerSocket {
           break;
         case CUSTOM_QUERY:
           // Payload contains query text.
-
         	generator = new qGenerator();
         	
         	JsonArray valid = new JsonArray();
@@ -167,12 +166,13 @@ public class ServerSocket {
           // Check whether or not custom query is valid.
           updateMessage = new JsonObject();
           updatePayload = new JsonObject();
+          
+          updatePayload.addProperty("valid", valid.toString());
 
           updateMessage.addProperty("type",
               MESSAGE_TYPE.CUSTOM_QUERY.ordinal());
           updateMessage.addProperty("payload", updatePayload.toString());
 
-          updatePayload.addProperty("valid", valid.toString());
           // Send back response on CUSTOM_QUERY.
           session.getRemote().sendString(updateMessage.toString());
 

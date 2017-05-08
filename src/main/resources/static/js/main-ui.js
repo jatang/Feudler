@@ -45,7 +45,7 @@ let connection;
 
 
 $(document).ready(() => {
-    connection = new Connection("ws://localhost:4567/connection");
+    connection = new Connection("ws://138.16.39.62:4567/connection");
     $home =$("#home");
     $settings = $("#settings").hide();
     $custom = $("#custom").hide();

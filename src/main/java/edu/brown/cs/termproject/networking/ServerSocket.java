@@ -125,6 +125,7 @@ public class ServerSocket {
     JsonObject updateMessage;
     JsonObject updatePayload;
     String updateMessageString;
+    qGenerator generator;
     Room room;
 
     try {
@@ -156,7 +157,7 @@ public class ServerSocket {
         case CUSTOM_QUERY:
           // Payload contains query text.
 
-        	qGenerator generator = new qGenerator();
+        	generator = new qGenerator();
         	
         	JsonArray valid = new JsonArray();
         	for(JsonElement query : payload.get("queries").getAsJsonArray()) {
@@ -193,7 +194,7 @@ public class ServerSocket {
             List<QueryResponses> customQueries = new ArrayList<>();
 
             if (payload.get("queries") != null) {
-              qGenerator generator = new qGenerator();
+              generator = new qGenerator();
               JsonArray custom = payload.get("queries").getAsJsonArray();
 
               for (JsonElement query : custom.getAsJsonArray()) {
